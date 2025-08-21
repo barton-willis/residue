@@ -687,8 +687,6 @@ Returns: The residue of the function `x -> w` at `pt`."
          ;; Otherwise, give up
          (t nil))))))
 
-;       (121 123 129 134 139 144 150 152 154 190 196 198 201 202 204)
-; (54 55 121 123 129 134 139 144 150 152     190 196 198 201 202 204)
 ;; I think this code needs a way to detect branch points. It is responsible for the bug
 ;; residue(1/(sqrt(x^2 - 1)), x, 1)
 (defun residue-by-taylor-asym (e x pt &optional (n 4) (stop 2))
@@ -755,14 +753,6 @@ Returns: The residue of the function `x -> w` at `pt`."
   (if (freeof x e)
       0
       nil))
-
-(defun residue-by-simp (e x pt)
-        (cond ((mplusp e) 
-               (fapply 'mplus 
-                  (mapcar #'(lambda (s) (residue-by-methods s x pt :methods (list 'residue-by-simp))) (cdr e))))
-              ((and (mtimesp e) (freeof x (cadr e)))
-                (mul (cadr e) (residue-by-methods (fapply 'mtimes (cddr e)) x pt :methods (list 'residue-by-simp))))
-              (t (residue-by-methods e x pt :methods (list 'residue-nounform)))))
 
 (defun residue-by-simp (e x pt)
  "Uses linearaity to to simplify a residue expression."
