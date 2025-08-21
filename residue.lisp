@@ -10,7 +10,6 @@
 
 (in-package :maxima)
 
-(print "git")
 (macsyma-module residu)
 
 (load-macsyma-macros rzmac)
@@ -484,8 +483,8 @@
   (setq *residue-methods*
         (list 'residue-by-freeof 
               'residue-by-infinity-transform
-              ;'residue-rational
-              ;'residue-by-taylor
+              'residue-rational
+              'residue-by-taylor
               'residue-by-taylor-asym
               'residue-by-powerseries 
               'residue-by-simp
