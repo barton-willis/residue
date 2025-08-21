@@ -13,7 +13,7 @@ So far, the repository includes:
 For debugging, the dispatch system optionally prints a message indicating which method succeeded. For these examples, we have turned on informational messages.
 
 ~~~
-(%i1) load("residu.lisp")$
+(%i1) load("residue.lisp")$
 
 (%i2) residue(1/(x^4+x+1)^2,x,a);
                4
