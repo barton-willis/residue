@@ -1,4 +1,4 @@
-Residue Computation in Maxima
+# Residue Computation in Maxima
 
 This project reworks the Maxima CAS code for computing residues. In future updates, we may revise parts of the definite integration code that depend on residue calculations.
 
@@ -8,7 +8,10 @@ So far, the repository includes:
 - A new regression test file
 - Updated source code for residue computation
 
-Here are a few examples. For debugging the dispatch method optionally prints a message about which method is successful. 
+## Examples and Debugging
+
+For debugging, the dispatch system optionally prints a message indicating which method succeeded. For these examples, we have turned on informational messages.
+
 ~~~
 (%i1) load("residu.lisp")$
 
