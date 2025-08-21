@@ -23,9 +23,11 @@ Residue method: residue-rational succeeded.
 (%o2)                   - ────────────────────────────
                               3        2
                           80 a  + 352 a  + 512 a + 255
+
 (%i3) residue(exp(-1/x),x,0);
 Residue method: residue-by-taylor-asym succeeded.
 (%o3)                                 - 1
+
 (%i4) residue(x*exp(-1/x),x,0);
 Residue method: residue-by-taylor-asym succeeded.
                                        1
