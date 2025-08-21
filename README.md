@@ -8,6 +8,7 @@ So far, the repository includes:
 - A new regression test file
 - Updated source code for residue computation
 
+Here are a few examples. For debugging the dispatch method optionally prints a message about which method is successful. 
 ~~~
 (%i1) load("residu.lisp")$
 
