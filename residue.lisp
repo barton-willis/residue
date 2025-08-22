@@ -673,7 +673,7 @@ Returns: The residue of the function `x -> w` at `pt`."
       ((eql stop 0) nil)
 
       (t
-       ;(setq e (logarc-atan2 e))
+       (setq e (logarc-atan2 e))
        (setq ee (catch 'taylor-catch ($taylor e x pt n)))
        (cond
          ;; It is important to check that `taylor` returns a sum of integer powers; here is a case that it
