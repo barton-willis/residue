@@ -97,6 +97,7 @@ residue(1/(x^2 - 4), x, 2);
 residue(1/(x^2 - 4), x, -2);
 -1/4$
 
+/* of course, when a = 0, this is wrong */
 residue(1/(x^2 - a^2), x, a);
 1/(2*a)$
 

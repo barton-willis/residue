@@ -614,7 +614,7 @@ Returns: The residue of the function `x -> w` at `pt`."
 
   (setq w (sratsimp w))
   (let* ((p ($num w))
-         (q ($sqfr ($denom w)))
+         (q ($factor ($denom w)))
          (qfactors (if (mtimesp q) (cdr q) (list q)))
 		    (cnd)
 		    (vanish))
@@ -624,10 +624,16 @@ Returns: The residue of the function `x -> w` at `pt`."
 	;; rational numbers, this condition is satisfied. But when some coefficients are symbolic, this might
 	;; not be true for all values of the parameters; for these cases, the condition that the members of
 	;; qfactors be relatively prime are
-	;(dolist (qk qfactors)
-	;	(dolist (ql qfactors)
-	;	   (push ($resultant qk ql x) cnd)))
-   ; (mtell "cnd = ~M ~%" (fapply 'mlist cnd))
+
+  (let ((cntx ($supcontext)))
+    (unwind-protect
+     (progn
+  	(dolist (qk qfactors)
+		(dolist (ql qfactors)
+		   (assume (ftake '$notequal ($resultant qk ql x) 0))))
+  ;; additionally, assume that the numerator and denominator have no common factors
+  (assume (ftake '$notequal ($resultant p q x) 0))
+    (mtell (intl:gettext "Assuming:  ~M ~%") (fapply 'mand (cdr (mfuncall '$facts))))
 
     (catch 'finished
       (dolist (qk qfactors)
@@ -638,6 +644,7 @@ Returns: The residue of the function `x -> w` at `pt`."
               (get-taylor-coeff
                 (div p ($first ($divide q (power (sub x pt) n)))) x pt (sub n 1) vanish)))))
       (throw 'finished 0)))
+    ($killcontext cntx))))
 	  (t nil))))
 
 (defun residue-by-taylor (e x pt &optional (n 4) (stop 2))
@@ -665,7 +672,7 @@ Returns: The residue of the function `x -> w` at `pt`."
       ((eql stop 0) nil)
 
       (t
-       (setq e (logarc-atan2 e))
+       ;(setq e (logarc-atan2 e))
        (setq ee (catch 'taylor-catch ($taylor e x pt n)))
        (cond
          ;; It is important to check that `taylor` returns a sum of integer powers; here is a case that it
