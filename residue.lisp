@@ -479,9 +479,12 @@
 
 (defvar *residue-methods* nil)
 
+;; The methods residue-nounform and residue-by-simp are required, but the other methods are 
+;; optional.
 (eval-when (:load-toplevel :execute)
   (setq *residue-methods*
-        (list 'residue-by-freeof 
+        (list 'residue-by-misc-undefined 
+              'residue-by-freeof 
               'residue-by-infinity-transform
               'residue-rational
               'residue-by-taylor
@@ -772,6 +775,13 @@ Returns: The residue of the function `x -> w` at `pt`."
               (residue-by-methods (fapply 'mtimes (cddr e)) x pt :methods (list 'residue-by-simp))))
         (t
          (residue-by-methods e x pt :methods (list 'residue-nounform)))))
+
+(defun residue-by-misc-undefined (e x pt)
+"Return a residue nounform when input is nonsence."
+  ;; possibly optionally throw an error?
+  (if (or (mrelationp e) (mrelationp pt) (not ($mapatom x)) (mbagp e) (mbagp pt))
+     (residue-by-methods e x pt :methods (list 'residue-nounform))
+     nil))
 
 (defun residue-by-methods (e x pt &key (methods *residue-methods*))
   "Attempt to compute the residue of expression `e` with respect to variable `x` at point `pt`.
