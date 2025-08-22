@@ -778,8 +778,8 @@ Returns: The residue of the function `x -> w` at `pt`."
 
 (defun residue-by-misc-undefined (e x pt)
 "Return a residue nounform when input is nonsence."
-  ;; possibly optionally throw an error?
-  (if (or (mrelationp e) (mrelationp pt) (not ($mapatom x)) (mbagp e) (mbagp pt))
+  ;; Possibly optionally throw an error instead of a nounform.
+  (if (or (mrelationp e) (mrelationp pt) (not ($mapatom x)) (mbagp e) (mbagp pt) (not (freeof x pt)))
      (residue-by-methods e x pt :methods (list 'residue-nounform))
      nil))
 
