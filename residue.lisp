@@ -616,36 +616,37 @@ Returns: The residue of the function `x -> w` at `pt`."
   (let* ((p ($num w))
          (q ($factor ($denom w)))
          (qfactors (if (mtimesp q) (cdr q) (list q)))
-		    (cnd)
-		    (vanish))
+         (cnd)
+         (vanish))
 
-	(cond ((ratp w x)
-	;; We assume that the members of qfactors are relatively prime. When the polynomial coefficients are
-	;; rational numbers, this condition is satisfied. But when some coefficients are symbolic, this might
-	;; not be true for all values of the parameters; for these cases, the condition that the members of
-	;; qfactors be relatively prime are
+    (cond ((ratp w x)
+           ;; We assume that the members of qfactors are relatively prime. When the polynomial coefficients are
+           ;; rational numbers, this condition is satisfied. But when some coefficients are symbolic, this might
+           ;; not be true for all values of the parameters; for these cases, the condition that the members of
+           ;; qfactors be relatively prime are
 
-  (let ((cntx ($supcontext)))
-    (unwind-protect
-     (progn
-  	(dolist (qk qfactors)
-		(dolist (ql qfactors)
-		   (assume (ftake '$notequal ($resultant qk ql x) 0))))
-  ;; additionally, assume that the numerator and denominator have no common factors
-  (assume (ftake '$notequal ($resultant p q x) 0))
-    (mtell (intl:gettext "Assuming:  ~M ~%") (fapply 'mand (cdr (mfuncall '$facts))))
+           (let ((cntx ($supcontext)))
+             (unwind-protect
+                 (progn
+                   (dolist (qk qfactors)
+                     (dolist (ql qfactors)
+                       (assume (ftake '$notequal ($resultant qk ql x) 0))))
+                   ;; additionally, assume that the numerator and denominator have no common factors
+                   (assume (ftake '$notequal ($resultant p q x) 0))
+                   (mtell (intl:gettext "Assuming:  ~M ~%") (fapply 'mand (cdr (mfuncall '$facts))))
 
-    (catch 'finished
-      (dolist (qk qfactors)
-        (when (eq '$yes ($askequal 0 (square-free-part (maxima-substitute pt x qk))))
-		  (setq vanish (square-free-part (maxima-substitute pt x qk)))
-          (let ((n (if (mexptp qk) (third qk) 1)))
-            (throw 'finished
-              (get-taylor-coeff
-                (div p ($first ($divide q (power (sub x pt) n)))) x pt (sub n 1) vanish)))))
-      (throw 'finished 0)))
-    ($killcontext cntx))))
-	  (t nil))))
+                   (catch 'finished
+                     (dolist (qk qfactors)
+                       (when (eq '$yes ($askequal 0 (square-free-part (maxima-substitute pt x qk))))
+                         (setq vanish (square-free-part (maxima-substitute pt x qk)))
+                         (let ((n (if (mexptp qk) (third qk) 1)))
+                           (throw 'finished
+                             (get-taylor-coeff
+                               (div p ($first ($divide q (power (sub x pt) n))))
+                               x pt (sub n 1) vanish)))))
+                     (throw 'finished 0)))
+               ($killcontext cntx))))
+          (t nil))))
 
 (defun residue-by-taylor (e x pt &optional (n 4) (stop 2))
   "Use a Taylor polynomial to find the residue of `e` at `pt` with respect to `x`. When successful,
