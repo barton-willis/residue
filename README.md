@@ -36,4 +36,41 @@ Residue method: residue-by-taylor-asym succeeded.
                                        1
 (%o4)                                  ─
                                        2
+
+(%i5) residue(sin(x)/x^n,x,0);
+   n - 2
+Is ───── an integer?
+     2
+
+yes;
+        n - 2
+Is 0 <= ─────?
+          2
+
+yes;
+Residue method: residue-by-powerseries succeeded.
+                                       n - 2
+                                       ─────
+                                         2
+                                  (- 1)
+(%o5)                             ──────────
+                                   (n - 1)!
+(%i6) residue(tan(x)/x^n,x,0);
+   n
+Is ─ an integer?
+   2
+
+yes;
+        n
+Is 0 <= ─?
+        2
+
+yes;
+Residue method: residue-by-powerseries succeeded.
+                            n/2 - 1   n       n
+                       (- 1)        (2  - 1) 2  bern(n)
+(%o6)                  ────────────────────────────────
+                                      n!
+(%i7)
+
 ~~~

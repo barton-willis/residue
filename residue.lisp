@@ -686,8 +686,7 @@ Returns: The residue of the function `x -> w` at `pt`."
          ((and ee
                (not (eql ee 0))
                ($polynomialp ee (ftake 'mlist x) #'(lambda (s) (freeof x s)) #'integerp)
-               ;(alike1 ($taylorinfo ee) (ftake 'mlist (ftake 'mlist x pt n)))
-               )
+               (alike1 ($taylorinfo ee) (ftake 'mlist (ftake 'mlist x pt n))))
           ;; Return the coefficient of 1/(x - pt) from the Taylor expansion
           ($ratdisrep (pscoeff1 ee x -1)))
 
@@ -826,7 +825,7 @@ Optional keyword argument:
 
 ;; should I set sumexpand : true & cauchysum : true?  what about
 ;; residue(exp(1/x)/(x+a),x,0)? I think we need to be more careful with
-;; solve. Can solve fail? What about all the option variables too?
+;; solve. Can solve fail? What about all the solve option variables?
 (defun residue-by-powerseries (e x pt)
   "Compute the residue of expression `e` at point `pt` with respect to variable `x`,
    using a power series expansion. Constructs the series in a temporary context
@@ -839,15 +838,45 @@ Optional keyword argument:
 
     (cond
       ((sump ps)
-       (let* ((summand (second ps))
+       (let* ((summand (second ps)) ;not correct for iterated sums
               (index (third ps))
               (lo (fourth ps))
               (hi (fifth ps))
               (n (div (mul ($diff summand x) (sub x pt)) summand))
-              (nn ($rhs ($first ($solve (ftake 'mequal n -1) index)))))
-         (if (and (integerp nn)
-                  (eq t (mgqp nn lo))
-                  (eq t (mgqp hi nn)))
+              (nn ($rhs ($first ($solve (ftake 'mequal n -1) index))))
+              (cntx ($supcontext)))
+         (unwind-protect
+         (if (and (eq '$yes ($askinteger nn))
+                  (eq '$yes ($ask (ftake 'mleqp lo nn) t))
+                  (eq '$yes ($ask (ftake 'mleqp nn hi) t)))
              (coeff (maxima-substitute nn index summand) x -1)
-             nil)))
+             nil)
+         ($killcontext cntx))))
       (t nil))))
+
+;; experimental code--ask a question about a mrelationp expression. When true, assume the fact
+;; in the current context.
+(defmfun $ask (e &optional (save nil))
+  (cond
+    ((mrelationp e)
+     (let ((ans (ask e)))
+       (when save
+         (assume e))
+       ans))
+    (t
+     (merror "ask: Expected an <, <=, =, #, >, >= expression, but found ~M ~%" e)
+     '$done)))
+
+(defmfun ask (e)
+  (let ((answer (mfuncall '$is e)))
+    (cond
+      ((eq answer t) '$yes)
+      ((eq answer nil) '$no)
+      (t
+       (setq answer (retrieve `((mtext) ,(intl:gettext "Is ") ,e  ,(intl:gettext "? ")) nil))
+       (cond
+         ((member answer '($no |$n| |$N|) :test #'eq) '$no)
+         ((member answer '($yes |$y| |$Y|) :test #'eq) '$yes)
+         (t
+          (mtell (intl:gettext "Acceptable answers are yes, y, Y, no, n, N. ~%"))
+          (ask e)))))))
