@@ -724,7 +724,8 @@ Returns: The residue of the function `x -> w` at `pt`."
 
       (t
        (setq e (logarc-atan2 e))
-       (setq ee (catch 'taylor-catch ($taylor e (ftake 'mlist x pt n '$asymp))))
+       ;; errcatch works around the taylor(exp(x)/(x-a)^n,[x,a,4,asymp]) -> Lisp error bug
+       (setq ee (car (errcatch (catch 'taylor-catch ($taylor e (ftake 'mlist x pt n '$asymp))))))
 
        (cond
          ;; It is important to check that `taylor` returns a sum of integer powers; here is a case that it
