@@ -619,7 +619,6 @@ Returns: The residue of the function `x -> w` at `pt`."
   (let* ((p ($num w))
          (q ($factor ($denom w)))
          (qfactors (if (mtimesp q) (cdr q) (list q)))
-         (cnd)
          (vanish))
 
     (cond ((ratp w x)

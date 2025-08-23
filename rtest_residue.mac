@@ -729,6 +729,10 @@ block([ans],
  ans);
 ((-1)^(n/2-1)*(2^n-1)*2^n*a^(n-1)*bern(n))/n!$
 
+/* is this correct? */
+residue(bessel_j(k,x)/x^4,x,0);
+(-bessel_j(k+3,0)+3*bessel_j(k+1,0)-3*bessel_j(k-1,0)+bessel_j(k-3,0))/48$
+
 values;
 []$
 
