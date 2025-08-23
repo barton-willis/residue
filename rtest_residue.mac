@@ -710,6 +710,25 @@ residue(x**2*cot(%pi*x)/(x**4 + 1), x, -sqrt(2)/2 - sqrt(2)*%i/2);
 -((%i-1)/(2^(5/2)*tan(((sqrt(2)*%i+sqrt(2))*%pi)/2)))$
 
 /* residue(exp(1/x)/(x+a),x,0); */
+
+block([ans],
+ assume(n >= 2),
+ declare(n,even),
+ ans : residue(sin(a*x)/x^n,x,0),
+ forget(n >= 2),
+ remove(n,even),
+ ans);
+ ((-1)^((n-2)/2)*a^(n-1))/(n-1)!$
+
+ block([ans],
+ assume(n >= 0),
+ declare(n,even),
+ ans : residue(tan(a*x)/x^n,x,0),
+ forget(n >= 0),
+ remove(n,even),
+ ans);
+((-1)^(n/2-1)*(2^n-1)*2^n*a^(n-1)*bern(n))/n!$
+
 values;
 []$
 

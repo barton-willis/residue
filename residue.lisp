@@ -831,7 +831,10 @@ Optional keyword argument:
    using a power series expansion. Constructs the series in a temporary context
    to avoid assumptions about the summation index, then safely discards it.
    Returns the coefficient of (x - pt)^-1 if identifiable, otherwise NIL."
-  (let ((cntx ($supcontext)) ($sumexpand t) ($cauchysum t) (ps))
+
+  ;; When algebraic is true, we get a bit of a mess from powerseries(1/(x^(2/3) + 1),x,0).
+  ;; So we'll set algrebraic to false.
+  (let ((cntx ($supcontext)) ($sumexpand t) ($cauchysum t) ($algebraic nil) (ps))
     (unwind-protect
         (setq ps (car (errcatch ($intosum ($powerseries e x pt)))))
         ($killcontext cntx))
