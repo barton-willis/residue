@@ -776,7 +776,8 @@ Returns: The residue of the function `x -> w` at `pt`."
          (residue-by-methods e x pt :methods (list 'residue-nounform)))))
 
 (defun residue-by-misc-undefined (e x pt)
-"Return a residue nounform when input is nonsence."
+"Return a residue nounform when input is an inequation, mbag, the variable isn't a mapatom, or the 
+ residue point depends on the variable; otherwise, return nil."
   ;; Possibly optionally throw an error instead of a nounform.
   (if (or (mrelationp e) (mrelationp pt) (not ($mapatom x)) (mbagp e) (mbagp pt) (not (freeof x pt)))
      (residue-by-methods e x pt :methods (list 'residue-nounform))
@@ -850,36 +851,43 @@ Optional keyword argument:
               (cntx ($supcontext)))
          (unwind-protect
          (if (and (eq '$yes ($askinteger nn))
-                  (eq '$yes ($ask (ftake 'mleqp lo nn) t))
-                  (eq '$yes ($ask (ftake 'mleqp nn hi) t)))
+                  (eq '$yes ($ask_relational (ftake 'mleqp lo nn) t))
+                  (eq '$yes ($ask_relational (ftake 'mleqp nn hi) t)))
              (coeff (maxima-substitute nn index summand) x -1)
              nil)
          ($killcontext cntx))))
       (t nil))))
 
 ;; experimental code--ask a question about a mrelationp expression. When true, assume the fact
-;; in the current context.
-(defmfun $ask (e &optional (save nil))
+;; in the current context.  Possibly "ask" implies that this function does more than it does--it
+;; doesn't allow, for example ask(integerp(zzz)). Maybe it either needs to be extended, or the 
+;; name needs to be changed. 
+(defmfun $ask_relational (e &optional (remember t))
   (cond
     ((mrelationp e)
-     (let ((ans (ask e)))
-       (when save
+     (let ((ans (ask-relational-helper e)))
+       (when (eq t remember)
          (assume e))
        ans))
     (t
-     (merror "ask: Expected an <, <=, =, #, >, >= expression, but found ~M ~%" e)
-     '$done)))
+     (merror (intl:gettext "ask: Expected a relational expresion (<, <=, =, #, >, >=), but got ~M ~%") e)
+     nil)))
 
-(defmfun ask (e)
+;; Bugs & things to thing about:  
+;; (a) ask(x # 3) is accepted, but assume(x # 3) is not valid. I'm not sure what I want.
+;; (c) I'm not sure that (mfuncall '$is e) is what I want?
+(defmfun ask-relational-helper (e)
   (let ((answer (mfuncall '$is e)))
     (cond
       ((eq answer t) '$yes)
       ((eq answer nil) '$no)
       (t
-       (setq answer (retrieve `((mtext) ,(intl:gettext "Is ") ,e  ,(intl:gettext "? ")) nil))
+       (setq answer (string-downcase (symbol-name 
+               (retrieve `((mtext) ,(intl:gettext "Is ") ,e  ,(intl:gettext "? ")) nil))))
        (cond
-         ((member answer '($no |$n| |$N|) :test #'eq) '$no)
-         ((member answer '($yes |$y| |$Y|) :test #'eq) '$yes)
+         ((member answer '("$yes" "$y") :test #'string=) '$yes)
+         ((member answer '("$no" "$n") :test #'string=) '$no)
          (t
-          (mtell (intl:gettext "Acceptable answers are yes, y, Y, no, n, N. ~%"))
-          (ask e)))))))
+          (mtell (intl:gettext "Acceptable answers are yes, y, no, n (case independent). ~%"))
+          (ask-helper e)))))))
+
