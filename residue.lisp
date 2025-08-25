@@ -842,8 +842,11 @@ Optional keyword argument:
         ($killcontext cntx))
 
     (cond
+      ;; workaround for weakness in $powerseries--bailout when the powerseries
+      ;; involves an %at or a %bessel_y expression.
+      ((amongl ps '(%at %bessel_y)) nil)
       ((sump ps)
-       (let* ((summand (second ps)) ;not correct for iterated sums
+       (let* ((summand (second ps)) ;incorrect for iterated sums
               (index (third ps))
               (lo (fourth ps))
               (hi (fifth ps))
@@ -890,7 +893,7 @@ Optional keyword argument:
          ((member answer '("$no" "$n") :test #'string=) '$no)
          (t
           (mtell (intl:gettext "Acceptable answers are yes, y, no, n (case independent). ~%"))
-          (ask-helper e)))))))
+          (ask-relational-helper e)))))))
 
 
 
