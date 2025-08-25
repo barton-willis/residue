@@ -729,11 +729,12 @@ Returns: The residue of the function `x -> w` at `pt`."
 
        (cond
          ;; It is important to check that `taylor` returns a sum of integer powers; here is a case that it
-         ;; does not: taylor(log(x),x,0,3) -> log(x)+.... Possibly, we could use taylorinfo to check if
-         ;; taylor returns a sum of powers. When taylor was successful, return the residue
+         ;; does not: taylor(log(x),x,0,3) -> log(x)+...I'm not sure the taylorinfo check is needed, but
+         ;; not that in Maxima 5.48, taylorinfo ignores the asymp identitfer, so using taylorinfo this
+         ;; way requires a fix to hayat.
          ((and ee
                (not (eql ee 0))
-               (alike1 ($taylorinfo ee) (ftake 'mlist (ftake 'mlist x pt n)))
+               (alike1 ($taylorinfo ee) (ftake 'mlist (ftake 'mlist x pt n '$asymp)))
                ($polynomialp ee (ftake 'mlist x) #'(lambda (s) (freeof x s)) #'integerp))
 
           ;; Return the coefficient of 1/(x - pt) from the Taylor expansion. And yes, for the
@@ -755,10 +756,10 @@ Returns: The residue of the function `x -> w` at `pt`."
 "Construct a symbolic noun form of the residue expression residue(e, x, pt)."
 	(ftake ($nounify '$residue) e x pt))
 
-;; This methods doesn't ask questions that some other methods might ask--for example 
-;; residue(a/b,x,b).
+;; We include this method because it doesn't ask questions that some other methods might ask--for example 
+;; for residue(a/b,x,b) some other methods might ask if b is zero.
 (defun residue-by-freeof (e x pt)
-  "Return 0 if `x` is free of `e`, so the residue is zero. Otherwise, return nil."
+  "Return 0 if `x` is free of `e`; otherwise, return nil."
   (declare (ignore pt))
   (if (freeof x e)
       0
@@ -834,7 +835,7 @@ Optional keyword argument:
    Returns the coefficient of (x - pt)^-1 if identifiable, otherwise NIL."
 
   ;; When algebraic is true, we get a bit of a mess from powerseries(1/(x^(2/3) + 1),x,0).
-  ;; So we'll set algrebraic to false.
+  ;; So we'll locally set algrebraic to false.
   (let ((cntx ($supcontext)) ($sumexpand t) ($cauchysum t) ($algebraic nil) (ps))
     (unwind-protect
         (setq ps (car (errcatch ($intosum ($powerseries e x pt)))))
@@ -890,4 +891,6 @@ Optional keyword argument:
          (t
           (mtell (intl:gettext "Acceptable answers are yes, y, no, n (case independent). ~%"))
           (ask-helper e)))))))
+
+
 
