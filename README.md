@@ -73,4 +73,15 @@ Residue method: residue-by-powerseries succeeded.
                                       n!
 (%i7)
 
+(%i8) residue(exp(%i*x*z)/(z^3+z+1),z,a);
+    3
+Is a  + a + 1 equal to 0?
+
+y;
+Residue method: residue-by-taylor succeeded.
+                                     %i a x
+                                   %e
+(%o8)                              ────────
+                                      2
+                                   3 a  + 1
 ~~~
