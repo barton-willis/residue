@@ -1,4 +1,4 @@
-(reset(),kill(all),0);
+(reset(),kill(all),display2d : false, 0);
 0$
 
 (nounform_return(e) := not(mapatom(e)) and cons(verbify(inpart(e,0)), args(e)),0);
@@ -658,8 +658,10 @@ block([demoivre : false], integrate(x^8/(5+x^9)^2,x,0,inf));
 1/45$
 
 /* \# 4595 residue bug*/
-residue(plog(x)/(x-%i*sin(%pi/9)-cos(%pi/9)),x,%e^((%i*%pi)/9));
-(9*log(sin(%pi/9)^2+cos(%pi/9)^2)+2*%i*%pi)/18$
+block([ans],
+ans : residue(plog(x)/(x-%i*sin(%pi/9)-cos(%pi/9)),x,%e^((%i*%pi)/9)),
+[ans, subst('plog ='log,ans)]);
+[plog(%e^((%i*%pi)/9)),(%i*%pi)/9]$
 
 /*  \#4597 residue should check if taylor series is a power series*/
 nounform_return(residue(log(1-x)/(1-x),x,1));
@@ -731,8 +733,48 @@ block([ans],
 
 /* is this correct? */
 residue(bessel_j(k,x)/x^4,x,0);
-(-bessel_j(k+3,0)+3*bessel_j(k+1,0)-3*bessel_j(k-1,0)+bessel_j(k-3,0))/48$
+-((bessel_j(k+3,0)-3*bessel_j(k+1,0)+3*bessel_j(k-1,0)-bessel_j(k-3,0))/48)$
 
+
+/* The following tests are adapted from Guo Yicong’s [Maxima residue package](https://github.com/guoyicong/Maxima_residue/tree/master). 
+This work is released under GNU General Public License v3.0.  I thank Guo Yicong for making these tests available. */
+residue(1/(z^7+1), z,exp(%i*%pi/7));
+-(%e^((%i*%pi)/7)/7)$
+
+residue(sin(1/z),z,0);
+1$
+
+residue(1/sin(z), z, 2*%pi);
+1$
+
+residue(1/(z-1), z, 1);
+1$
+
+residue(cos(z)/(z-1)^2/(z+4), z, -4);
+cos(4)/25$
+
+residue(z*cos(1/z), z, 0);
+-1/2$
+
+nounform_return(residue(cos(z)*sin(1/z), z, 0));
+['residue, cos(z)*sin(1/z), z, 0]$
+
+residue(z^2*sin(1/z), z, 0);
+-1/6$
+
+residue(exp(1/z)/(1-z), z, 0);
+-1$
+
+nounform_return(residue(exp(z)*exp(1/z), z, 0));
+['residue, exp(z)*exp(1/z), z, 0]$
+
+residue(exp(1/z^2)/(1-z), z, 0);
+-1$
+
+residue(z^2*sin(1/(z-1)), z, 1);
+5/6$
+
+/* end of Guo Yicong’s tests */
 values;
 []$
 
