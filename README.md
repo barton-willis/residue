@@ -1,17 +1,29 @@
 # Residue Computation in Maxima
 
-This project reworks the Maxima CAS code for computing residues. In future updates, we may revise parts of the definite integration code that depend on residue calculations.
+This project reworks the Maxima CAS code for computing residues—that is, the coefficient of the reciprocal term in a Laurent series. In future updates, we may revise parts of the definite integration code that depend on residue calculations.
 
-We've introduced a new user-level function `residue` which dispatches various methods, including several new ones. This system is designed to be readily extensible. We've also updated some of the older internal functions to use this new method dispatch system.
+Internally, the new user-level function `residue` uses an extensible dispatch system that selects among several well-known methods, including Taylor series expansion, power series techniques, and asymptotic Taylor methods. Some older internal functions have also been updated to use this new dispatch framework.
 
-So far, the repository includes:
+## What is Included
+The repository includes:
 - A new regression test file
 - Updated source code for residue computation
 
+## Usage
+
+To use the package in Maxima:
+
+``
+maxima
+load("residue.lisp")$
+``
+
+to compute the residue of `expr` with respect to `var` at `point`. Then at a Maxima prompt call 
+``residue(expr, var, point)``
+
 ## Examples and Debugging
 
-For debugging, the dispatch system optionally prints a message indicating which method succeeded. For these examples, we have turned on informational messages.
-
+Below are sample computations with informational messages enabled. 
 ~~~
 (%i1) load("residue.lisp")$
 
@@ -85,3 +97,20 @@ Residue method: residue-by-taylor succeeded.
                                       2
                                    3 a  + 1
 ~~~
+
+## Related Work
+See also Guo Yicong’s [Maxima residue package](https://github.com/guoyicong/Maxima_residue/tree/master).
+
+ 
+## License
+
+This project is released under the [GNU General Public License v2.0](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
+
+
+## Contributing
+
+We welcome contributions. You can add new residue methods, report bugs (either via the Maxima mailing list or the GitHub issue tracker), suggest improvements or better algorithms, or extend integration support.
+
+
+
+
