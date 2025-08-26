@@ -655,46 +655,62 @@ Returns: The residue of the function `x -> w` at `pt`."
   return the residue, otherwise return nil. The fourth argument `n` determines the order of the Taylor
   polynomial. When the order is too small, double `n` and try again. The last argument `stop` counts down
   and ends this recursion when `stop` reaches zero."
-  (let ((ee)
-        (silent-taylor-flag t)
-        ($taylordepth 8)
-        ($radexpand nil)
-        ($%emode t)
-        ($taylor_logexpand nil)
-        ($exponentialize nil)
-        ($demoivre nil)
-        ($taylor_simplifier #'resimplify)
-        ($logexpand nil))
-    (cond
-      ;; This shouldn't happen, but we'll check for this case
-      ((member pt *infinities*) nil)
 
-      ((not (tlimp e x)) nil)
+  ;; When the denominator of `e` is a polynomial, ask the user if each factor vanishes at `pt`.  When there is
+  ;; a vanishing factor, set taylor_simplifier to ratsubst zero for this factor.
+  (let ((Q ($denom e)) (vanish nil) (cnd))
+    (when ($polynomialp Q (ftake 'mlist x) #'(lambda (s) (freeof x s)))
+      (setq Q (square-free-part Q))
+      (setq Q (if (mtimesp Q) (cdr Q) (list Q)))
+      (catch 'finished
+        (dolist (qk Q)
+          (setq cnd ($askequal (maxima-substitute pt x qk) 0))
+          (when (eq cnd '$yes)
+            (setq vanish (maxima-substitute pt x qk))
+            (throw 'finished t)))))
 
-      ;; Terminate effort to find the Taylor series when `stop` is zero
-      ((eql stop 0) nil)
+    (let ((ee)
+          (silent-taylor-flag t)
+          ($taylordepth 8)
+          ($radexpand nil)
+          ($%emode t)
+          ($taylor_logexpand nil)
+          ($exponentialize nil)
+          ($demoivre nil)
+          ($taylor_simplifier (if vanish
+                                  #'(lambda (s) ($ratsubst 0 vanish s))
+                                  #'resimplify))
+          ($logexpand nil))
+      (cond
+        ;; This shouldn't happen, but we'll check for this case
+        ((member pt *infinities*) nil)
 
-      (t
-       (setq e (logarc-atan2 e))
-       (setq ee (catch 'taylor-catch ($taylor e x pt n)))
-       (cond
-         ;; It is important to check that `taylor` returns a sum of integer powers; here is a case that it
-         ;; does not: taylor(log(x),x,0,3) -> log(x)+.... Possibly, we could use taylorinfo to check if
-         ;; taylor returns a sum of powers. When taylor was successful, return the residue
-         
-         ((and ee
-               (not (eql ee 0))
-               ($polynomialp ee (ftake 'mlist x) #'(lambda (s) (freeof x s)) #'integerp)
-               (alike1 ($taylorinfo ee) (ftake 'mlist (ftake 'mlist x pt n))))
-          ;; Return the coefficient of 1/(x - pt) from the Taylor expansion
-          ($ratdisrep (pscoeff1 ee x -1)))
+        ((not (tlimp e x)) nil)
 
-         ;; Double n and retry if ee was not nil and stop is positive
-         ((and ee (> stop 0))
-          (residue-by-taylor e x pt (* 2 (max 1 n)) (1- stop)))
+        ;; Terminate effort to find the Taylor series when `stop` is zero
+        ((eql stop 0) nil)
 
-         ;; Otherwise, give up
-         (t nil))))))
+        (t
+         (setq e (logarc-atan2 e))
+         (setq ee (catch 'taylor-catch ($taylor e x pt n)))
+         (cond
+           ;; It is important to check that `taylor` returns a sum of integer powers; here is a case that it
+           ;; does not: taylor(log(x),x,0,3) -> log(x)+.... Possibly, we could use taylorinfo to check if
+           ;; taylor returns a sum of powers. When taylor was successful, return the residue
+
+           ((and ee
+                 (not (eql ee 0))
+                 ($polynomialp ee (ftake 'mlist x) #'(lambda (s) (freeof x s)) #'integerp)
+                 (alike1 ($taylorinfo ee) (ftake 'mlist (ftake 'mlist x pt n))))
+            ;; Return the coefficient of 1/(x - pt) from the Taylor expansion
+            ($ratdisrep (pscoeff1 ee x -1)))
+
+           ;; Double n and retry if ee was not nil and stop is positive
+           ((and ee (> stop 0))
+            (residue-by-taylor e x pt (* 2 (max 1 n)) (1- stop)))
+
+           ;; Otherwise, give up
+           (t nil)))))))
 
 ;; I think this code needs a way to detect branch points. It is responsible for the bug
 ;; residue(1/(sqrt(x^2 - 1)), x, 1)
@@ -894,6 +910,4 @@ Optional keyword argument:
          (t
           (mtell (intl:gettext "Acceptable answers are yes, y, no, n (case independent). ~%"))
           (ask-relational-helper e)))))))
-
-
 
