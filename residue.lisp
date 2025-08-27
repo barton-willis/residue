@@ -770,7 +770,7 @@ Returns: The residue of the function `x -> w` at `pt`."
 
 (defun residue-nounform (e x pt)
 "Construct a symbolic noun form of the residue expression residue(e, x, pt)."
-	(ftake ($nounify '$residue) e x pt))
+	($funmake '$residue (ftake 'mlist e x pt)))
 
 ;; We include this method because it doesn't ask questions that some other methods might ask--for example 
 ;; for residue(a/b,x,b) some other methods might ask if b is zero.
@@ -854,11 +854,12 @@ Optional keyword argument:
    Returns the coefficient of (x - pt)^-1 if identifiable, otherwise NIL."
 
   ;; When algebraic is true, we get a bit of a mess from powerseries(1/(x^(2/3) + 1),x,0).
-  ;; So we'll locally set algrebraic to false.
-  (let ((cntx ($supcontext)) ($sumexpand t) ($cauchysum t) ($algebraic nil) (ps))
-    (unwind-protect
-        (setq ps (car (errcatch ($intosum ($powerseries e x pt)))))
-        ($killcontext cntx))
+  ;; So we'll locally set algebraic to false.
+  (let ((ps nil))
+    (let ((cntx ($supcontext)) ($sumexpand t) ($cauchysum t) ($algebraic nil))
+      (unwind-protect
+          (setq ps ($intosum (car (errcatch ($powerseries e x pt)))))
+        ($killcontext cntx)))
 
     (cond
       ;; workaround for weakness in $powerseries--bailout when the powerseries
@@ -873,12 +874,12 @@ Optional keyword argument:
               (nn ($rhs ($first ($solve (ftake 'mequal n -1) index))))
               (cntx ($supcontext)))
          (unwind-protect
-         (if (and (eq '$yes ($askinteger nn))
-                  (eq '$yes ($ask_relational (ftake 'mleqp lo nn) t))
-                  (eq '$yes ($ask_relational (ftake 'mleqp nn hi) t)))
-             (coeff (maxima-substitute nn index summand) x -1)
-             nil)
-         ($killcontext cntx))))
+             (if (and (eq '$yes ($askinteger nn))
+                      (eq '$yes ($ask_relational (ftake 'mleqp lo nn) t))
+                      (eq '$yes ($ask_relational (ftake 'mleqp nn hi) t)))
+                 (coeff (maxima-substitute nn index summand) x -1)
+               nil)
+           ($killcontext cntx))))
       (t nil))))
 
 ;; experimental code--ask a question about a mrelationp expression. When true, assume the fact
