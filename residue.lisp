@@ -808,7 +808,10 @@ and return either a valid residue or nil. Returns the first successful result, o
 
 Optional keyword argument:
   :methods — a list of method symbols to try (default: *residue-methods*)"
-  ;; (setq e (mfuncall '$trigsimp e)) ; optional preprocessing
+  ;(setq e (mfuncall '$trigsimp e)) ; optional preprocessing
+
+  ;; Using sqrtdenest on pt fixes some bad errors including integrate((-14*x^2-32)/(x^4+3*x^2+1)^2,x,0,inf);
+  (setq pt ($sqrtdenest pt))
   (let (($gcd '$spmod) ($algebraic t))
   (catch 'finished
     (dolist (fn methods)
