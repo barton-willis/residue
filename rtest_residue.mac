@@ -298,6 +298,7 @@ residue(gamma(x),x,0);
 residue(gamma(x)*gamma(x-1),x,0);
 2*%gamma - 1$
 
+
 residue(gamma(x)*gamma(x-1)*gamma(x-2),x,0);
 -((%pi^2+18*%gamma^2-30*%gamma+17)/8)$
 
@@ -783,7 +784,6 @@ residue(z^2*sin(1/(z-1)), z, 1);
  this bug. */
 /* https://sourceforge.net/p/maxima/mailman/message/22347358/ */
 
-/*
 block([domain : complex, ans],
  declare(N,integer),
  ans : residue(1 / (x*(x-x0)*(1 - x^N/y)),x,0),
@@ -800,7 +800,7 @@ block([domain : complex, ans],
 
  block([ans],
    declare(k,integer),
-   ans : nounform_return(residue(subst(k=+p, x^(k-1) / ((x - x0)*(1 - x^N/y))),x,0)),
+   ans : nounform_return(residue(subst(k=p, x^(k-1) / ((x - x0)*(1 - x^N/y))),x,0)),
    remove(k,integer),
    ans);
 ['residue, x^(p-1)/((x-x0)*(1-x^N/y)),x,0]$
@@ -819,7 +819,7 @@ block([ans],
 	   remove(k,integer),
 	   ans);
 ['residue, x^(k-1) / ((x - x0)*(1 - x^N/y)),x,0]$
- */
+
 
 /* https://sourceforge.net/p/maxima/mailman/maxima-discuss/thread/87czewybvj.fsf%40t-online.de/#msg37672791*/
 
