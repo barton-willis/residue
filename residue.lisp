@@ -390,11 +390,13 @@ Optional keyword argument:
               (lo (fourth ps))
               (hi (fifth ps))
               (n (div (mul ($diff summand x) (sub x pt)) summand))
-              (nn (solve-with-multiplicities (ftake 'mequal n -1) index))
+              (nn (first (multiple-value-list
+                 (solve-with-multiplicities (ftake 'mequal n -1) index))))
               (cntx ($supcontext)))
+
+         (setq nn (first nn))
          (unwind-protect
              (if (and nn ; a solution, and 
-                      (null (cdr nn)) ; only one solution
                       (eq '$yes ($askinteger nn))
                       (eq '$yes ($ask_relational (ftake 'mleqp lo nn) t))
                       (eq '$yes ($ask_relational (ftake 'mleqp nn hi) t)))
