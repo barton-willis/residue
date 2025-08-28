@@ -379,9 +379,9 @@ Optional keyword argument:
         ($killcontext cntx)))
 
     (cond
-      ;; workaround for weakness in $powerseries--bailout when the powerseries
-      ;; involves an %at or a %bessel_y expression.
-      ((amongl ps '(%at %bessel_y)) nil)
+      ;; when the powerseries involves an %at expression, the series is likely 
+      ;; wrong, return nil.
+      ((not (freeof '%at ps)) nil)
       ((sump ps)
        (let* ((summand (second ps)) ;incorrect for iterated sums
               (index (third ps))
