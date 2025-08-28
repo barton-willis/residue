@@ -23,7 +23,7 @@
 
 (defun solve-with-multiplicities (q x)
   "Return a list of the solutions to the equation `q=0` for `x`. Return both a CL list
- of the solutions and a CL list of the coresponding multiplicities. When solve fails, 
+ of the solutions and a CL list of the corresponding multiplicities. When solve fails, 
  return nil. The solutions are not in the form of an equation. "
   (let* (($breakup nil)
          ($programmode t)
