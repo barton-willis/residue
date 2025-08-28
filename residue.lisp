@@ -33,8 +33,7 @@
          ($solvefactors t)
          (ans (mapcar #'$rhs (cdr ($solve ($factor q) x)))))
     ;; When solutions are missing, return (values nil nil)
-    (if (eql ($hipow ($expand q) x)
-             (reduce #'+ (cdr $multiplicities)))
+    (if (eql ($hipow ($expand q) x) (reduce #'add (cdr $multiplicities)))
         (values ans (cdr $multiplicities))
         (values nil nil))))        
 
@@ -364,7 +363,7 @@ Optional keyword argument:
 
 ;; should I set sumexpand : true & cauchysum : true?  what about
 ;; residue(exp(1/x)/(x+a),x,0)? I think we need to be more careful with
-;; solve. Can solve fail? What about all the solve option variables?
+;; solve.
 
 ;; Possibly this should be boosted to handle iterated sums and products of
 ;; sums, but this code doesn't.
@@ -383,18 +382,20 @@ Optional keyword argument:
         ($killcontext cntx)))
     (cond
       ;; when the powerseries involves an %at expression, the series is likely 
-      ;; wrong, return nil.
+      ;; wrong, so return nil.
       ((not (freeof '%at ps)) nil)
-      ((and (sump ps) (freeof '%sum (second ps)))
-       (let* ((summand (second ps)) ;incorrect for iterated sums
+      ((and (sump ps) (freeof '%sum (second ps))) ; disallow iterated sums
+       (let* ((summand (second ps)) 
               (index (third ps))
               (lo (fourth ps))
               (hi (fifth ps))
               (n (div (mul ($diff summand x) (sub x pt)) summand))
-              (nn ($rhs ($first ($solve (ftake 'mequal n -1) index))))
+              (nn (solve-with-multiplicities (ftake 'mequal n -1) index))
               (cntx ($supcontext)))
          (unwind-protect
-             (if (and (eq '$yes ($askinteger nn))
+             (if (and nn ; a solution, and 
+                      (null (cdr nn)) ; only one solution
+                      (eq '$yes ($askinteger nn))
                       (eq '$yes ($ask_relational (ftake 'mleqp lo nn) t))
                       (eq '$yes ($ask_relational (ftake 'mleqp nn hi) t)))
                  (coeff (maxima-substitute nn index summand) x -1)
@@ -417,7 +418,7 @@ Optional keyword argument:
      (merror (intl:gettext "ask: Expected a relational expresion (<, <=, =, #, >, >=), but got ~M ~%") e)
      nil)))
 
-;; Bugs & things to thing about:  
+;; Bugs & things to think about:  
 ;; (a) ask(x # 3) is accepted, but assume(x # 3) is not valid. I'm not sure what I want.
 ;; (c) I'm not sure that (mfuncall '$is e) is what I want?
 (defmfun ask-relational-helper (e)
