@@ -365,6 +365,9 @@ Optional keyword argument:
 ;; should I set sumexpand : true & cauchysum : true?  what about
 ;; residue(exp(1/x)/(x+a),x,0)? I think we need to be more careful with
 ;; solve. Can solve fail? What about all the solve option variables?
+
+;; Possibly this should be boosted to handle iterated sums and products of
+;; sums, but this code doesn't.
 (defun residue-by-powerseries (e x pt)
   "Compute the residue of expression `e` at point `pt` with respect to variable `x`,
    using a power series expansion. Constructs the series in a temporary context
@@ -382,7 +385,7 @@ Optional keyword argument:
       ;; when the powerseries involves an %at expression, the series is likely 
       ;; wrong, return nil.
       ((not (freeof '%at ps)) nil)
-      ((and (sump ps) (freeof '%sum ($args ps)))
+      ((and (sump ps) (freeof '%sum (second ps)))
        (let* ((summand (second ps)) ;incorrect for iterated sums
               (index (third ps))
               (lo (fourth ps))
