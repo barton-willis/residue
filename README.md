@@ -2,7 +2,7 @@
 
 This project reworks the Maxima CAS code for computing residues—that is, the coefficient of the reciprocal term in a Laurent series. In future updates, we may revise parts of the definite integration code that depend on residue calculations.
 
-Internally, the new user-level function `residue` uses an extensible dispatch system that selects among several well-known methods, including Taylor series expansion, power series techniques, and asymptotic Taylor methods. Some older internal functions have also been updated to use this new dispatch framework.
+Internally, the new user-level function `residue` uses an extensible dispatch system that selects among several well-known methods, including Taylor series expansion, power series techniques, and asymptotic Taylor methods. 
 
 ## What is Included
 The repository includes:

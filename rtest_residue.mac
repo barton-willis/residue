@@ -799,27 +799,28 @@ block([domain : complex, ans],
  y/(x0*y-x0^(N+1))$
 
  block([ans],
-   declare(k,integer),
+   declare([k,N],integer),
    ans : nounform_return(residue(subst(k=p, x^(k-1) / ((x - x0)*(1 - x^N/y))),x,0)),
-   remove(k,integer),
+   remove([k,N], integer),
    ans);
 ['residue, x^(p-1)/((x-x0)*(1-x^N/y)),x,0]$
 
+
 block([ans],
-   declare(k,integer),
+   declare([k,N],integer),
    ans : nounform_return(residue(subst(k=-p, x^(k-1) / ((x - x0)*(1 - x^N/y))),x,0)),
-   remove(k,integer),
+   remove([k,N],integer),
    ans);
 ['residue,x^(-p-1)/((x-x0)*(1-x^N/y)),x,0]$
 
 
+
 block([ans],
-	   declare(k,integer),
+	   declare([k,N],integer),
 	   ans : nounform_return(residue(x^(k-1) / ((x - x0)*(1 - x^N/y)),x,0)),
-	   remove(k,integer),
+	   remove([k,N],integer),
 	   ans);
 ['residue, x^(k-1) / ((x - x0)*(1 - x^N/y)),x,0]$
-
 
 /* https://sourceforge.net/p/maxima/mailman/maxima-discuss/thread/87czewybvj.fsf%40t-online.de/#msg37672791*/
 

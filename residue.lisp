@@ -249,8 +249,8 @@ Returns: The residue of the function `x -> w` at `pt`."
         ($radexpand nil)
         ($%emode t)
         ($taylor_logexpand nil)
-        ($exponentialize nil)
-        ($demoivre nil)
+        ;($exponentialize nil)
+        ;($demoivre nil)
         ($taylor_simplifier #'resimplify)
         ($logexpand nil))
     (cond
@@ -432,8 +432,11 @@ Optional keyword argument:
           (mtell (intl:gettext "Acceptable answers are yes, y, no, n (case independent). ~%"))
           (ask-relational-helper e)))))))
 
+;; with CCL, but *not* SBCL, running rtest_residue gives the error: Odd-length property list in REMF.
+;; Wrapping the call to remf in zl-remprop with ignore-errors allows the tests to run to completion.
+;; This code tries to find out what is going on.
 (defvar *yikes* nil)
-(defun zl-rempropzzz (sym indicator)
+(defun zl-remprop (sym indicator)
   (if (symbolp sym)
       (remprop sym indicator)
     (unless (atom sym)
@@ -446,3 +449,34 @@ Optional keyword argument:
 		   (let ((*print-circle* t)) (print `(sym = ,sym)))
 		   (let ((*print-circle* t)) (print `(IND = ,indicator)))
           (push (ftake 'mlist result condition (list-length (cdr sym))) *yikes*))))))
+
+;; Unless you build Maxima from the curent source, there is a bug in taylor info. Here is 
+;; a fix for that bug.
+(defun taylor-info (q)
+  (let ((acc-var nil) (acc-pt nil) (acc-ord nil) (qk) (acc))
+    (cond ((null q) nil)
+	  (t
+	   (setq qk (pop q))
+	   (cond ((and (fourth qk) (consp (fourth qk)) (eq (caar (fourth qk)) 'multivar)) nil)
+		 ((and (fourth qk) (consp (fourth qk)) (eq (caar (fourth qk)) 'multi))
+		  (while (and (fourth qk) (consp (fourth qk)) (eq (caar (fourth qk)) 'multi))
+		    (setq acc nil)
+		    (push (taylor-trunc qk) acc-ord)
+		    (push (exp-pt qk) acc-pt)
+		    (push (datum-var qk) acc-var)
+		    (setq qk (pop q)))
+		  (push '(mlist) acc-ord)
+		  (push '(mlist) acc-pt)
+		  (push '(mlist) acc-var)
+		  (setq q (taylor-info q))
+		  (if (null q) (list acc-var acc-pt acc-ord) (append q (list acc-var acc-pt acc-ord))))
+
+		 (t
+		  (setq acc (if (and (fourth qk) (consp (fourth qk)) (eq '$asymp (caar (fourth qk))))
+				(list '$asymp) nil))
+		  (push (taylor-trunc qk) acc)
+		  (push (exp-pt qk) acc)
+		  (push (datum-var qk) acc)
+		  (push '(mlist) acc)
+		  (setq q (taylor-info q))
+		  (if (null q) (list acc) (append q (list acc)))))))))
