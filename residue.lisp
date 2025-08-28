@@ -251,6 +251,7 @@ Returns: The residue of the function `x -> w` at `pt`."
         ($taylor_logexpand nil)
         ;($exponentialize nil)
         ;($demoivre nil)
+        ($errormsg nil)
         ($taylor_simplifier #'resimplify)
         ($logexpand nil))
     (cond
@@ -373,16 +374,15 @@ Optional keyword argument:
   ;; When algebraic is true, we get a bit of a mess from powerseries(1/(x^(2/3) + 1),x,0).
   ;; So we'll locally set algebraic to false.
   (let ((ps nil))
-    (let ((cntx ($supcontext)) ($sumexpand t) ($cauchysum t) ($algebraic nil))
+    (let ((cntx ($supcontext)) ($sumexpand nil) ($cauchysum nil) ($algebraic nil))
       (unwind-protect
           (setq ps ($intosum (car (errcatch ($powerseries e x pt)))))
         ($killcontext cntx)))
-
     (cond
       ;; when the powerseries involves an %at expression, the series is likely 
       ;; wrong, return nil.
       ((not (freeof '%at ps)) nil)
-      ((sump ps)
+      ((and (sump ps) (freeof '%sum ($args ps)))
        (let* ((summand (second ps)) ;incorrect for iterated sums
               (index (third ps))
               (lo (fourth ps))
