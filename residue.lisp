@@ -103,19 +103,19 @@ Notes:
                (values (reverse res) poles))))))))
 
 ;; See https://math.stackexchange.com/questions/3480929/theorem-on-residue-of-composite-function
-(defmfun $residue (e var p)
+(defmfun $residue (e x pt)
   ;; Error when var isn't a mapatom
-  (when (not ($mapatom var))
-    (merror (intl:gettext "residue: second argument must be a mapatom; found ~M") var))
+  (when (not ($mapatom x))
+    (merror (intl:gettext "residue: second argument must be a mapatom; found ~M") x))
   ;; Error when `p` depends on `var`
-  (when (not (freeof var p))
-    (merror (intl:gettext "residue: third argument must not depend on second argument; found ~M") p))
+  (when (not (freeof x pt))
+    (merror (intl:gettext "residue: third argument must not depend on second argument; found ~M") pt))
   ;; Error when `e` is an mbag
   (when (mbagp e)
 	(merror (intl:gettext "residue: first argument must not be an mbag; found ~M") e))
-   ;; Error when `p` is an mbag
-  (when (mbagp p)
-	(merror (intl:gettext "residue: third argument must not be an mbag; found ~M") p))
+   ;; Error when `pt` is an mbag
+  (when (mbagp pt)
+	(merror (intl:gettext "residue: third argument must not be an mbag; found ~M") pt))
 
   ;; Unfortunately, when running the testsuite, sometimes `e` is not simplified. So, let us
   ;; call resimplify, but this doesn't fix any bugs that I know.
@@ -123,7 +123,7 @@ Notes:
   ;; Make sure that `e` is in standard representation
   (setq e ($ratdisrep e))
 
-  (residue-by-methods e var p))
+  (residue-by-methods e x pt))
  
 (defun residue-by-infinity-transform (e x pt)
  "Compute the residue of `e` at infinity by transforming via x = 1/z."
