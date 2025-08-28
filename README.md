@@ -18,7 +18,7 @@ maxima
 load("residue.lisp")$
 ``
 
-. Then at a Maxima prompt, to compute the residue of `expr` with respect to `var` at `point`, enter 
+Then at a Maxima prompt, to compute the residue of `expr` with respect to `var` at `point`, enter 
 ``residue(expr, var, point)``
 
 ## Examples and Debugging
