@@ -11,18 +11,12 @@ The repository includes:
 
 ## Usage
 
-To use the package in Maxima:
+To use the package in Maxima, start by loading the file. To do this, copy the file "residue.lisp" to a folder
+that Maxima can find and enter the command ``load("residue.lisp")$``.  After loading the file, to compute the residue of `expr` with respect to `var` at `point`, enter ``residue(expr, var, point)``.
 
-``
-maxima
-load("residue.lisp")$
-``
+## Examples
 
-Then at a Maxima prompt, to compute the residue of `expr` with respect to `var` at `point`, enter 
-``residue(expr, var, point)``
-
-## Examples and Debugging
-
+The package optionally prints information about which method was successful. 
 Below are sample computations with informational messages enabled. 
 ~~~
 (%i1) load("residue.lisp")$
