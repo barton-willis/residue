@@ -441,7 +441,7 @@ Optional keyword argument:
 ;; Wrapping the call to remf in zl-remprop with ignore-errors allows the tests to run to completion.
 ;; This code tries to find out what is going on.
 (defvar *yikes* nil)
-(defun zl-remprop-999 (sym indicator)
+(defun zl-remprop (sym indicator)
   (if (symbolp sym)
       (remprop sym indicator)
     (unless (atom sym)
