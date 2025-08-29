@@ -160,7 +160,9 @@ Returns: The residue of the function `x -> w` at `pt`."
                        (assume (ftake '$notequal ($resultant qk ql x) 0))))
                    ;; additionally, assume that the numerator and denominator have no common factors
                    (assume (ftake '$notequal ($resultant p q x) 0))
-                   (mtell (intl:gettext "Assuming:  ~M ~%") (fapply 'mand (cdr (mfuncall '$facts))))
+                   (let ((cnd (fapply 'mand (cdr (mfuncall '$facts)))))
+                     (when (not (eq t cnd))
+                      (mtell (intl:gettext "Assuming:  ~M ~%") cnd)))
 
                    (catch 'finished
                      (dolist (qk qfactors)
