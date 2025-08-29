@@ -639,6 +639,10 @@ integrate(sin(x)^10/(5+3+cos(x)), x, -%pi, %pi);
  ((302126861787242200403*7^(3/2)-5595467784769984850400)*%pi)
  /(4228583547896*sqrt(7)-11187780465792)$
 
+/* maybe this was supposed to be: */
+integrate(sin(x)^10/(5+3*cos(x)), x, -%pi, %pi);
+(384143*%pi)/3779136$
+
 /* \#4580 residue with constant symbolic constants */
 residue(f(a)/(x-1),x,1);
 f(a)$
