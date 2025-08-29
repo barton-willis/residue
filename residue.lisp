@@ -293,7 +293,7 @@ Returns: The residue of the function `x -> w` at `pt`."
 
 (defun residue-nounform (e x pt)
 "Construct a symbolic noun form of the residue expression residue(e, x, pt)."
-  (list (list '$residue 'simp) e x pt))
+  (list (list '%residue 'simp) e x pt))
 
 ;; We include this method because it doesn't ask questions that some other methods might ask--for example 
 ;; for residue(a/b,x,b) some other methods might ask if b is zero.
@@ -308,19 +308,19 @@ Returns: The residue of the function `x -> w` at `pt`."
  "Uses linearaity to to simplify a residue expression."
   (cond ((mplusp e)
          (fapply 'mplus
-                 (mapcar #'(lambda (s) (residue-by-methods s x pt :methods (list 'residue-by-simp))) (cdr e))))
+                 (mapcar #'(lambda (s) (residue-by-methods s x pt)) (cdr e))))
         ((and (mtimesp e) (freeof x (cadr e)))
          (mul (cadr e)
-              (residue-by-methods (fapply 'mtimes (cddr e)) x pt :methods (list 'residue-by-simp))))
+              (residue-by-methods (fapply 'mtimes (cddr e)) x pt)))
         (t
-         (residue-by-methods e x pt :methods (list 'residue-nounform)))))
+         (residue-nounform e x pt))))
 
 (defun residue-by-misc-undefined (e x pt)
 "Return a residue nounform when input is an inequation, mbag, the variable isn't a mapatom, or the 
  residue point depends on the variable; otherwise, return nil."
   ;; Possibly optionally throw an error instead of a nounform.
   (if (or (mrelationp e) (mrelationp pt) (not ($mapatom x)) (mbagp e) (mbagp pt) (not (freeof x pt)))
-     (residue-by-methods e x pt :methods (list 'residue-nounform))
+     (residue-nounform e x pt)
      nil))
 
 (defun residue-by-methods (e x pt &key (methods *residue-methods*))
@@ -332,10 +332,9 @@ and return either a valid residue or nil. Returns the first successful result, o
 Optional keyword argument:
   :methods — a list of method symbols to try (default: *residue-methods*)"
   ;(setq e (mfuncall '$trigsimp e)) ; optional preprocessing
-
   ;; Using sqrtdenest on pt fixes some bad errors including integrate((-14*x^2-32)/(x^4+3*x^2+1)^2,x,0,inf);
   (setq pt ($sqrtdenest pt))
-  (let (($gcd '$spmod) ($algebraic t))
+  (let (($gcd '$spmod) ($algebraic t)) 
   (catch 'finished
     (dolist (fn methods)
       (let ((ans (funcall fn e x pt)))
@@ -442,7 +441,7 @@ Optional keyword argument:
 ;; Wrapping the call to remf in zl-remprop with ignore-errors allows the tests to run to completion.
 ;; This code tries to find out what is going on.
 (defvar *yikes* nil)
-(defun zl-remprop (sym indicator)
+(defun zl-remprop-999 (sym indicator)
   (if (symbolp sym)
       (remprop sym indicator)
     (unless (atom sym)

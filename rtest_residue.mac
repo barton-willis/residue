@@ -1,7 +1,7 @@
-(reset(),kill(all),display2d : false, 0);
+(reset(),kill(all),display2d : true, 0);
 0$
 
-(nounform_return(e) := not(mapatom(e)) and cons(inpart(e,0), args(e)),0);
+(nounform_return(e) := not(mapatom(e)) and cons(verbify(inpart(e,0)), args(e)),0);
 0$
 
 /* residue of constants */
@@ -684,7 +684,7 @@ block([ans],
 
 block([ans],
 assume(a>0),
-ans : [residue(exp(a/x),x,0), residue(x*exp(a/x),x,0), residue(exp(a/x)/x,x,0)],
+ans : ['residue(exp(a/x),x,0), residue(x*exp(a/x),x,0), residue(exp(a/x)/x,x,0)],
 forget(a>0),
 ans);
 [a,a^2/2,1]$
