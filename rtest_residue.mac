@@ -1,4 +1,4 @@
-(reset(),kill(all),display2d : true, 0);
+(reset(),kill(all),display2d : true, load("residue.lisp"), 0);
 0$
 
 (nounform_return(e) := not(mapatom(e)) and cons(verbify(inpart(e,0)), args(e)),0);
