@@ -438,6 +438,12 @@ Optional keyword argument:
           (mtell (intl:gettext "Acceptable answers are yes, y, no, n (case independent). ~%"))
           (ask-relational-helper e)))))))
 
+(defun resm1 (e pt)
+   (residue-by-methods e var pt))
+
+(defun resm1-var (x e pt)
+	 (residue-by-methods e x pt))
+   
 ;; with CCL, but *not* SBCL, running rtest_residue gives the error: Odd-length property list in REMF.
 ;; Wrapping the call to remf in zl-remprop with ignore-errors allows the tests to run to completion.
 ;; This code tries to find out what is going on.
