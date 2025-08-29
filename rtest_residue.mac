@@ -1,7 +1,8 @@
 (reset(),kill(all),display2d : true, load("residue.lisp"), 0);
 0$
 
-(nounform_return(e) := not(mapatom(e)) and cons(verbify(inpart(e,0)), args(e)),0);
+(nounform_return(e) := if mapatom(e) then false else cons(verbify(inpart(e,0)), args(e)) ,0);   
+
 0$
 
 /* residue of constants */
@@ -799,9 +800,9 @@ block([domain : complex, ans],
  y/(x0*y-x0^(N+1))$
 
  block([ans],
-   declare([k,N],integer),
-   ans : nounform_return(residue(subst(k=p, x^(k-1) / ((x - x0)*(1 - x^N/y))),x,0)),
-   remove([k,N], integer),
+   declare([p,N],integer),
+   ans : nounform_return(residue(x^(p-1) / ((x - x0)*(1 - x^N/y))),x,0),
+   remove([p,N], integer),
    ans);
 ['residue, x^(p-1)/((x-x0)*(1-x^N/y)),x,0]$
 
