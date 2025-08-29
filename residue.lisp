@@ -1,6 +1,6 @@
 (in-package :maxima)
 
-(defvar *residue-method-info* t
+(defvar *residue-method-info* nil
   "If non-nil, residue methods may print informational messages when they succeed.")
 
 (defvar *residue-methods* nil)
@@ -62,6 +62,7 @@
              ($ratdisrep (pscoeff1 ee x n))
              nil))))
 
+;; This function isn't used and hasn't been tested.
 (defun all-residues-rational-fun (p q x)
   "Compute all the residues of the rational function p/q at the poles of q using Heaviside's formula.
 Arguments:
@@ -101,7 +102,8 @@ Notes:
 				          (if (mexptp qk) (sub (third qk) 1) 0)) res)) qq poles)
                (values (reverse res) poles))))))))
 
-;; See https://math.stackexchange.com/questions/3480929/theorem-on-residue-of-composite-function
+;; For another possible method for finding residues, see 
+;; https://math.stackexchange.com/questions/3480929/theorem-on-residue-of-composite-function
 (defmfun $residue (e x pt)
   ;; Error when var isn't a mapatom
   (when (not ($mapatom x))
@@ -121,7 +123,6 @@ Notes:
   (setq e (resimplify e))
   ;; Make sure that `e` is in standard representation
   (setq e ($ratdisrep e))
-
   (residue-by-methods e x pt))
  
 (defun residue-by-infinity-transform (e x pt)
@@ -441,7 +442,7 @@ Optional keyword argument:
 ;; Wrapping the call to remf in zl-remprop with ignore-errors allows the tests to run to completion.
 ;; This code tries to find out what is going on.
 (defvar *yikes* nil)
-(defun zl-remprop (sym indicator)
+(defun zl-remprop-xxx (sym indicator)
   (if (symbolp sym)
       (remprop sym indicator)
     (unless (atom sym)
@@ -485,3 +486,4 @@ Optional keyword argument:
 		  (push '(mlist) acc)
 		  (setq q (taylor-info q))
 		  (if (null q) (list acc) (append q (list acc)))))))))
+
