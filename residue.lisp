@@ -176,6 +176,22 @@ Returns: The residue of the function `x -> w` at `pt`."
                ($killcontext cntx))))
           (t nil))))
 
+(defvar *non-analytic-functions* '($conjugate $ceiling $floor $unit_step mabs $cabs $round))
+;; adapted from tlimit.lisp, function tlimp
+(defun taylor-likely-ok-p (e x &key (forbidden *non-analytic-functions*))
+  (or (and ($mapatom e) (not (eq e '$ind)) (not (eq e '$und)))
+      (and (consp e) 
+           (consp (car e)) 
+           (or (not (among x e)) 
+               (not (member (caar e) forbidden :test #'eq)))
+           (or 
+            (known-ps (caar e)) 
+            (and (eq (caar e) 'mqapply) (known-ps (subfunname e)))
+            (member (caar e) (list 'mplus 'mtimes 'mexpt '%log))
+            (get (caar e) 'grad)
+            ($freeof x e))
+           (every #'(lambda (q) (taylor-likely-ok-p q x :forbidden forbidden)) (cdr e)))))
+
 (defun residue-by-taylor (e x pt &optional (n 4) (stop 2))
   "Use a Taylor polynomial to find the residue of `e` at `pt` with respect to `x`. When successful,
   return the residue, otherwise return nil. The fourth argument `n` determines the order of the Taylor
@@ -211,6 +227,7 @@ Returns: The residue of the function `x -> w` at `pt`."
         ;; This shouldn't happen, but we'll check for this case
         ((member pt *infinities*) nil)
 
+        ((not (taylor-likely-ok-p e x)) nil)
         ;; Terminate effort to find the Taylor series when `stop` is zero
         ((eql stop 0) nil)
 
