@@ -58,8 +58,7 @@
       ;; Check if `ee` is a legitimate Taylor polynomial.
           (if (and 
                (not (eql ee 0))
-               ($polynomialp ee (ftake 'mlist x) #'(lambda (s) (freeof x s)) #'integerp)
-               (alike1 ($taylorinfo ee) (ftake 'mlist (ftake 'mlist x pt n))))
+               ($polynomialp ee (ftake 'mlist x) #'(lambda (s) (freeof x s)) #'integerp))
              ($ratdisrep (pscoeff1 ee x n))
              nil))))
 
@@ -220,13 +219,10 @@ Returns: The residue of the function `x -> w` at `pt`."
          (setq ee (catch 'taylor-catch ($taylor e x pt n)))
          (cond
            ;; It is important to check that `taylor` returns a sum of integer powers; here is a case that it
-           ;; does not: taylor(log(x),x,0,3) -> log(x)+.... Possibly, we could use taylorinfo to check if
-           ;; taylor returns a sum of powers. When taylor was successful, return the residue
-
+           ;; does not: taylor(log(x),x,0,3) -> log(x)+.... 
            ((and ee
                  (not (eql ee 0))
-                 ($polynomialp ee (ftake 'mlist x) #'(lambda (s) (freeof x s)) #'integerp)
-                 (alike1 ($taylorinfo ee) (ftake 'mlist (ftake 'mlist x pt n))))
+                 ($polynomialp ee (ftake 'mlist x) #'(lambda (s) (freeof x s)) #'integerp))
             ;; Return the coefficient of 1/(x - pt) from the Taylor expansion
             ($ratdisrep (pscoeff1 ee x -1)))
 
@@ -270,12 +266,9 @@ Returns: The residue of the function `x -> w` at `pt`."
        (setq ee (car (errcatch (catch 'taylor-catch ($taylor e (ftake 'mlist x pt n '$asymp))))))
        (cond
          ;; It is important to check that `taylor` returns a sum of integer powers; here is a case that it
-         ;; does not: taylor(log(x),x,0,3) -> log(x)+...I'm not sure the taylorinfo check is needed, but
-         ;; note that in Maxima 5.48, taylorinfo ignores the asymp identitfer, so using taylorinfo this
-         ;; way requires a fix to hayat.
+         ;; does not: taylor(log(x),x,0,3) -> log(x)+...
          ((and ee
                (not (eql ee 0))
-               (alike1 ($taylorinfo ee) (ftake 'mlist (ftake 'mlist x pt n '$asymp)))
                ($polynomialp ee (ftake 'mlist x) #'(lambda (s) (freeof x s)) #'integerp))
 
           ;; Return the coefficient of 1/(x - pt) from the Taylor expansion. And yes, for the
@@ -458,35 +451,4 @@ Optional keyword argument:
 (defun resm0-var (var1 e n pole m)
   (declare (ignore m))
   (residue-by-methods (div n e) var1 pole))
-
-;; Unless you build Maxima from the curent source, there is a bug in taylor info. Here is 
-;; a fix for that bug.
-(defun taylor-info (q)
-  (let ((acc-var nil) (acc-pt nil) (acc-ord nil) (qk) (acc))
-    (cond ((null q) nil)
-	  (t
-	   (setq qk (pop q))
-	   (cond ((and (fourth qk) (consp (fourth qk)) (eq (caar (fourth qk)) 'multivar)) nil)
-		 ((and (fourth qk) (consp (fourth qk)) (eq (caar (fourth qk)) 'multi))
-		  (while (and (fourth qk) (consp (fourth qk)) (eq (caar (fourth qk)) 'multi))
-		    (setq acc nil)
-		    (push (taylor-trunc qk) acc-ord)
-		    (push (exp-pt qk) acc-pt)
-		    (push (datum-var qk) acc-var)
-		    (setq qk (pop q)))
-		  (push '(mlist) acc-ord)
-		  (push '(mlist) acc-pt)
-		  (push '(mlist) acc-var)
-		  (setq q (taylor-info q))
-		  (if (null q) (list acc-var acc-pt acc-ord) (append q (list acc-var acc-pt acc-ord))))
-
-		 (t
-		  (setq acc (if (and (fourth qk) (consp (fourth qk)) (eq '$asymp (caar (fourth qk))))
-				(list '$asymp) nil))
-		  (push (taylor-trunc qk) acc)
-		  (push (exp-pt qk) acc)
-		  (push (datum-var qk) acc)
-		  (push '(mlist) acc)
-		  (setq q (taylor-info q))
-		  (if (null q) (list acc) (append q (list acc)))))))))
 
