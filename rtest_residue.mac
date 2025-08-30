@@ -788,7 +788,7 @@ residue(z^2*sin(1/(z-1)), z, 1);
 /* The nounform return is suboptimal, but it isn't wrong.*/
 block([domain : complex, ans],
  declare(N,integer),
- ans : residue(1 / (x*(x-x0)*(1 - x^N/y)),x,0),
+ ans : nounform_return(residue(1 / (x*(x-x0)*(1 - x^N/y)),x,0)),
  forget(N,integer),
  ans);
 ['residue, 1 / (x*(x-x0)*(1 - x^N/y)),x,0]$
