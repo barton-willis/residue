@@ -448,6 +448,18 @@ Optional keyword argument:
 (defun resm1-var (x e pt)
 	 (residue-by-methods e x pt))
 
+;; This is a bit inefficient, I suppose. Maxima has determined the pole order, but this code
+;; sends n/e to residue-by-methods. But replacing these functions is an effort to replace all
+;; of the old residue code to use the new. We get a much nicer value for integrate(1/(x^4+3 x^2 + 1)^2,x,0,inf)
+;; by replacing resm0 & resm0-var.
+(defun resm0 (e n pole m)
+    (declare (ignore m))
+    (residue-by-methods (div n e) var pole))
+
+(defun resm0-var (var1 e n pole m)
+  (declare (ignore m))
+  (residue-by-methods (div n e) var1 pole))
+
 ;; Unless you build Maxima from the curent source, there is a bug in taylor info. Here is 
 ;; a fix for that bug.
 (defun taylor-info (q)
