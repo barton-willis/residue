@@ -308,7 +308,8 @@ Returns: The residue of the function `x -> w` at `pt`."
       0
       nil))
 
-;;  When f is holomorphic at a, we have Res(fg,a) = f(a)Res(g,a). I could attempt to impliment this rule. 
+;;  When f is holomorphic at a and g has a pole of order zero or one at a, we have Res(fg,a) = f(a)Res(g,a). 
+;; I could attempt to impliment this rule. 
 (defun residue-by-simp (e x pt)
  "Uses linearaity to to simplify a residue expression."
   (cond ((mplusp e)

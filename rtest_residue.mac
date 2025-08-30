@@ -869,6 +869,10 @@ integrate((-14*x^2-32)/(x^4+3*x^2+1)^2,x,0,inf);
 /* https://sourceforge.net/p/maxima/mailman/message/37742912/  Not sure if this is a residue problem
 integrate(x^2/((x^2-a^2)^2+g^2*x^2),x,-inf,inf); */
 
+/* test residue-by-simp */
+residue(a*f(x)+ g(x)/%pi + c/(x-a),x,a);
+residue(g(x),x,a)/%pi+a*residue(f(x),x,a)+c$
+
 values;
 []$
 
