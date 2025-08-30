@@ -308,6 +308,7 @@ Returns: The residue of the function `x -> w` at `pt`."
       0
       nil))
 
+;;  When f is holomorphic at a, we have Res(fg,a) = f(a)Res(g,a). I could attempt to impliment this rule. 
 (defun residue-by-simp (e x pt)
  "Uses linearaity to to simplify a residue expression."
   (cond ((mplusp e)
@@ -446,24 +447,6 @@ Optional keyword argument:
 
 (defun resm1-var (x e pt)
 	 (residue-by-methods e x pt))
-
-;; with CCL, but *not* SBCL, running rtest_residue gives the error: Odd-length property list in REMF.
-;; Wrapping the call to remf in zl-remprop with ignore-errors allows the tests to run to completion.
-;; This code tries to find out what is going on.
-(defvar *yikes* nil)
-(defun zl-remprop-xxx (sym indicator)
-  (if (symbolp sym)
-      (remprop sym indicator)
-    (unless (atom sym)
-      (multiple-value-bind (result condition)
-          (ignore-errors
-            (remf (cdr sym) indicator))
-        (when condition
-		   (mtell "remf error:  result = ~M ; condition = ~M ~%" result condition)
-		   (let ((*print-circle* t)) (print (cdr sym)))
-		   (let ((*print-circle* t)) (print `(sym = ,sym)))
-		   (let ((*print-circle* t)) (print `(IND = ,indicator)))
-          (push (ftake 'mlist result condition (list-length (cdr sym))) *yikes*))))))
 
 ;; Unless you build Maxima from the curent source, there is a bug in taylor info. Here is 
 ;; a fix for that bug.
