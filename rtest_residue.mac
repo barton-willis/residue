@@ -635,11 +635,10 @@ block([ans], assume(sin(phi) > 0),
 %pi/(2*sin(phi))$
 
 /* \#4579 residue fails in integration (setting algebraic : true gives nicer answer)*/
-integrate(sin(x)^10/(5+3+cos(x)), x, -%pi, %pi);
- ((302126861787242200403*7^(3/2)-5595467784769984850400)*%pi)
- /(4228583547896*sqrt(7)-11187780465792)$
+block([algebraic : true], integrate(sin(x)^10/(8+cos(x)), x, -%pi, %pi));
+-(((314928*7^(9/2)-2000564027)*%pi)/8)$
 
-/* maybe this was supposed to be: */
+/* maybe bug 4579 was supposed to be: */
 integrate(sin(x)^10/(5+3*cos(x)), x, -%pi, %pi);
 (384143*%pi)/3779136$
 
@@ -784,17 +783,15 @@ residue(z^2*sin(1/(z-1)), z, 1);
 
 /* Tests collected from the mailing list */
 
-/* Some of these tests trigger a bug with ccl64, but not with sbcl. The error message is
- "Odd-length property list in REMF".  For now, I'm commenting them out, but of course, we need to fix
- this bug. */
 /* https://sourceforge.net/p/maxima/mailman/message/22347358/ */
 
+/* The nounform return is suboptimal, but it isn't wrong.*/
 block([domain : complex, ans],
  declare(N,integer),
  ans : residue(1 / (x*(x-x0)*(1 - x^N/y)),x,0),
  forget(N,integer),
  ans);
- -(y/(x0*y-x^N*x0))$
+['residue, 1 / (x*(x-x0)*(1 - x^N/y)),x,0]$
 
 block([domain : complex, ans],
  declare(N,integer),
@@ -805,7 +802,7 @@ block([domain : complex, ans],
 
  block([ans],
    declare([p,N],integer),
-   ans : nounform_return(residue(x^(p-1) / ((x - x0)*(1 - x^N/y))),x,0),
+   ans : nounform_return(residue(x^(p-1) / ((x - x0)*(1 - x^N/y)),x,0)),
    remove([p,N], integer),
    ans);
 ['residue, x^(p-1)/((x-x0)*(1-x^N/y)),x,0]$
@@ -844,7 +841,7 @@ residue(5/(w - exp(%i*phi)), w, exp(%i*phi));
 
 /* https://sourceforge.net/p/maxima/mailman/message/29524668/ */
 residue(1/(x^8+1),x,exp(%i*%pi/8));
-exp(-(7*%i*%pi)/8)/8$
+(%e^((7*%i*%pi)/8)*%i+%e^((7*%i*%pi)/8))/2^(7/2)$
 
 /* https://sourceforge.net/p/maxima/mailman/message/22682703/ */
 
@@ -865,8 +862,7 @@ block([xxx : makelist(makelist(residue(1/(z^n+1),z, exp((2*k+1)*%i*%pi/n)),k,0,n
       trigrat(xxx-yyy));
 [[],[0],[0,0],[0,0,0],[0,0,0,0],[0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0,0]]$
 
-/* See https://sourceforge.net/p/maxima/mailman/message/21331154/ 
-But this bug has been fixed, but with this residue code, it is a bug again. */
+/* See https://sourceforge.net/p/maxima/mailman/message/21331154/ */
 integrate((-14*x^2-32)/(x^4+3*x^2+1)^2,x,0,inf);
 -((103*%pi)/(2*5^(3/2)))$
 
