@@ -451,21 +451,12 @@ Optional keyword argument:
           (mtell (intl:gettext "Acceptable answers are yes, y, no, n (case independent). ~%"))
           (ask-relational-helper e)))))))
 
+;; Redefine resm1 & resm1-var to call residue-by-methods. The functions resm0 & resm0-var are, I think,
+;; OK as is.
 (defun resm1 (e pt)
+  "Return residue(e,var,pt), where var is special."
    (residue-by-methods e var pt))
 
 (defun resm1-var (x e pt)
-	 (residue-by-methods e x pt))
-
-;; This is a bit inefficient, I suppose. Maxima has determined the pole order, but this code
-;; sends n/e to residue-by-methods. But replacing these functions is an effort to replace all
-;; of the old residue code to use the new. We get a much nicer value for integrate(1/(x^4+3 x^2 + 1)^2,x,0,inf)
-;; by replacing resm0 & resm0-var.
-(defun resm0 (e n pole m)
-    (declare (ignore m))
-    (residue-by-methods (div n e) var pole))
-
-(defun resm0-var (var1 e n pole m)
-  (declare (ignore m))
-  (residue-by-methods (div n e) var1 pole))
-
+  "Return residue(e,x,pt)."
+	(residue-by-methods e x pt))
