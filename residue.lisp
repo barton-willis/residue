@@ -452,8 +452,8 @@ Optional keyword argument:
           (mtell (intl:gettext "Acceptable answers are yes, y, no, n (case independent). ~%"))
           (ask-relational-helper e)))))))
 
-;; Redefine resm1 & resm1-var to call residue-by-methods. The functions resm0 & resm0-var are, I think,
-;; OK as is.
+;; Redefine resm1 & resm1-var to call residue-by-methods. The functions resm0, resm0-var, residue,
+;; and residue-var are, I think, OK as is.
 (defun resm1 (e pt)
   "Return residue(e,var,pt), where var is special."
    (residue-by-methods e var pt))
@@ -478,19 +478,6 @@ Optional keyword argument:
   (some #'(lambda (q) (branch-point-p q x pt)) (cdr e)))
 
 ;; I think this should define its own context and save the results of any ask queries.
-;; And I think it doesn't correctly handle subscripted functions, for example li[2].
-
-(defvar *un* nil)
-
-(defun branch-point-p (e x pt)
-  (cond (($mapatom e) nil)
-        ((and (consp e) (consp (car e)))
-         (when (not (gethash (caar e) *branch-point-hashtable*))
-            (push (caar e) *un*))
-         (let ((fn (gethash (caar e) *branch-point-hashtable* #'default-branch-point-p)))
-           (funcall fn (cdr e) x pt)))
-        (t nil)))
-
 (defun branch-point-p (e x pt)
   "Return true iff the function x -> e has a branch point at pt."
   (setq e ($ratdisrep e))
@@ -504,7 +491,6 @@ Optional keyword argument:
               (t
                (setq fn (gethash op  *branch-point-hashtable* #'default-branch-point-p))
                (funcall fn (cdr e) x pt)))))
-
     (t nil)))
 
 (defmacro define-branch-point-handler (symbol args &body body)
