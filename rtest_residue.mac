@@ -647,9 +647,8 @@ residue(f(a)/(x-1),x,1);
 f(a)$
 
 /* \#4582 residue(sin(1/(z-1)), z, 1);*/
-/* one is not an isolated singularity of x -> sin(1/(x-1)), so no residue at one.*/
-nounform_return(residue(sin(1/(z-1)), z, 1));
-['residue, sin(1/(z-1)),z,1]$ 
+residue(sin(1/(z-1)), z, 1);
+1$
 
 /* \#4590 integrals of some rational functions from minf to inf */
 integrate(1/(x^2 + %i+a),x,minf,inf);
@@ -696,8 +695,9 @@ ans);
 residue(exp(-1/x),x,0);
 -1$
 
-residue(x^(5/2) * exp(1/sqrt(x)),x,0);
-1/5040$
+/* zero is a branch point of x -> x^(5/2) * exp(1/sqrt(x)), so no residue at zero. */
+nounform_return(residue(x^(5/2) * exp(1/sqrt(x)),x,0));
+[residue,%e^(1/sqrt(x))*x^(5/2),x,0]$
 
 /* see https://math.stackexchange.com/questions/4700802/residues-of-dual-pole-%CE%93-functions*/
 
@@ -721,9 +721,11 @@ residue(x**2*cot(%pi*x)/(x**4 + 1), x, -sqrt(2)/2 - sqrt(2)*%i/2);
 block([ans],
  assume(n >= 2),
  declare(n,even),
+ declare(n,integer),
  ans : residue(sin(a*x)/x^n,x,0),
  forget(n >= 2),
  remove(n,even),
+ remove(n,integer),
  ans);
  ((-1)^((n-2)/2)*a^(n-1))/(n-1)!$
 
@@ -788,36 +790,46 @@ residue(z^2*sin(1/(z-1)), z, 1);
 /* The nounform return is suboptimal, but it isn't wrong.*/
 block([domain : complex, ans],
  declare(N,integer),
+ assume(N > 0, y > 0),
  ans : nounform_return(residue(1 / (x*(x-x0)*(1 - x^N/y)),x,0)),
- forget(N,integer),
+ remove(N,integer),
+ forget(N > 0, y > 0),
  ans);
 ['residue, 1 / (x*(x-x0)*(1 - x^N/y)),x,0]$
 
 block([domain : complex, ans],
  declare(N,integer),
+ assume(N > 0, y > 0),
  ans : residue(1 / (x*(x-x0)*(1 - x^N/y)),x,x0),
  remove(N,integer),
+ forget(N > 0, y > 0),
  ans);
  y/(x0*y-x0^(N+1))$
 
  block([ans],
    declare([p,N],integer),
+   assume(N > 0, y > 0),
    ans : nounform_return(residue(x^(p-1) / ((x - x0)*(1 - x^N/y)),x,0)),
    remove([p,N], integer),
+   forget(N > 0, y > 0),
    ans);
 ['residue, x^(p-1)/((x-x0)*(1-x^N/y)),x,0]$
 
 block([ans],
    declare([p,N],integer),
+   assume(N > 0, y > 0),
    ans : nounform_return(residue(x^(-p-1) / ((x - x0)*(1 - x^N/y)),x,0)),
    remove([p,N],integer),
+   forget(N > 0, y > 0),
    ans);
 ['residue,x^(-p-1)/((x-x0)*(1-x^N/y)),x,0]$
 
 block([ans],
 	   declare([k,N],integer),
+     assume(N > 0, y > 0),
 	   ans : nounform_return(residue(x^(k-1) / ((x - x0)*(1 - x^N/y)),x,0)),
 	   remove([k,N],integer),
+     forget(N > 0, y > 0),
 	   ans);
 ['residue, x^(k-1) / ((x - x0)*(1 - x^N/y)),x,0]$
 

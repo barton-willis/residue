@@ -13,6 +13,7 @@
         (list 'residue-by-misc-undefined 
               'residue-by-freeof 
               'residue-by-infinity-transform
+              'residue-by-branch-point
               'residue-rational
               'residue-by-taylor
               'residue-by-taylor-asym
@@ -460,3 +461,133 @@ Optional keyword argument:
 (defun resm1-var (x e pt)
   "Return residue(e,x,pt)."
 	(residue-by-methods e x pt))
+
+(defun residue-by-branch-point (e x pt)
+  "When pt is a branch point of x -> e, return a residue nounform; otherwise return nil."
+  (if (branch-point-p e x pt)
+    (residue-nounform e x pt)
+    nil))
+
+;; for testing only--not intended to be a user-level function.
+(defun $bp (e x pt)
+  (branch-point-p e x pt))
+
+(defvar *branch-point-hashtable* (make-hash-table :test #'eq))
+
+(defun default-branch-point-p (e x pt)
+  (some #'(lambda (q) (branch-point-p q x pt)) (cdr e)))
+
+;; I think this should define its own context and save the results of any ask queries.
+;; And I think it doesn't correctly handle subscripted functions, for example li[2].
+
+(defvar *un* nil)
+
+(defun branch-point-p (e x pt)
+  (cond (($mapatom e) nil)
+        ((and (consp e) (consp (car e)))
+         (when (not (gethash (caar e) *branch-point-hashtable*))
+            (push (caar e) *un*))
+         (let ((fn (gethash (caar e) *branch-point-hashtable* #'default-branch-point-p)))
+           (funcall fn (cdr e) x pt)))
+        (t nil)))
+
+(defun branch-point-p (e x pt)
+  "Return true iff the function x -> e has a branch point at pt."
+  (setq e ($ratdisrep e))
+  (cond
+    (($mapatom e) nil)
+    ((and (consp e) (consp (car e)))
+      (let ((op (mop e)) (fn))
+        (cond (($subvarp op)
+                (setq fn (gethash (subfunname e) *branch-point-hashtable* #'default-branch-point-p))
+                (funcall fn (append (subfunsubs e) (subfunargs e)) x pt))
+              (t
+               (setq fn (gethash op  *branch-point-hashtable* #'default-branch-point-p))
+               (funcall fn (cdr e) x pt)))))
+
+    (t nil)))
+
+(defmacro define-branch-point-handler (symbol args &body body)
+  "Defines a branch point handler named SYMBOL-BRANCH-POINT-P and registers it under SYMBOL."
+  (let ((fn-name (intern (concatenate 'string
+                                      (string-downcase (symbol-name symbol))
+                                      "-branch-point-p"))))
+    `(progn
+       (defun ,fn-name ,args
+         ,@body)
+       (setf (gethash ',symbol *branch-point-hashtable*) #',fn-name))))
+
+(define-branch-point-handler %log (e x pt)
+  (let ((z ($limit (car e) x pt)))
+    (or (eql 0 z) (eq '$infinity z) (eq '$und z))))
+
+(define-branch-point-handler %plog (e x pt)
+  (let ((z ($limit (car e) x pt)))
+    (or (eql 0 z) (eq '$infinity z) (eq '$und z))))      
+
+(define-branch-point-handler %asin (e x pt)
+  (let ((z ($limit (car e) x pt)))
+    (or (eql -1 z) 
+        (eql 1 z) 
+        (eq '$und z)
+        (branch-point-p (car e) x pt))))
+
+(define-branch-point-handler %acos (e x pt)
+  (let ((z ($limit (car e) x pt)))
+    (or (eql -1 z) 
+        (eql 1 z) 
+        (eq '$und z)
+        (branch-point-p (car e) x pt))))
+
+(define-branch-point-handler %atan (e x pt)
+  (let ((z ($limit (car e) x pt)))
+    (or (alike1 z '$%i)
+        (alike1 z (mul -1 '$%i))
+        (eq '$und z)
+        (branch-point-p (car e) x pt))))
+
+(define-branch-point-handler mplus (e x pt)
+  (some #'(lambda (ek) (branch-point-p ek x pt)) e))
+
+(define-branch-point-handler mtimes (e x pt)
+    (some #'(lambda (ek) (branch-point-p ek x pt)) e))
+
+;; This needs work. 
+(define-branch-point-handler mexpt (e x pt)
+  (let* ((a (first e)) (b (second e)))
+    (cond (($featurep b '$integer)
+            (branch-point-p a x pt))
+          (t
+            (or 
+               (eql ($limit a x pt) 0)
+               (branch-point-p a x pt)
+               (branch-point-p b x pt))))))
+
+(define-branch-point-handler %bessel_j (e x pt)
+   (let* ((a (first e)) (b (second e)))
+    (cond (($featurep a '$integer)
+            (branch-point-p b x pt))
+          (t
+            (or 
+              (eql ($limit b x pt) 0)
+              (branch-point-p b x pt))))))
+            
+(define-branch-point-handler %bessel_y (e x pt)
+   (let* ((b (second e)))
+            (or 
+              (eql ($limit b x pt) 0)
+              (branch-point-p b x pt))))
+
+(define-branch-point-handler $li (e x pt)
+   (let* ((a (first e)) (b (second e)))
+            (or 
+              (eql ($limit b x pt) 1)
+              (branch-point-p b x pt)
+              (branch-point-p a x pt))))
+
+  (define-branch-point-handler $psi (e x pt)
+   (let* ((a (first e)) (b (second e)))
+            (or 
+              (and (integerp a) (eq t (mgrp 0 a)))
+              (branch-point-p b x pt)
+              (branch-point-p a x pt))))
