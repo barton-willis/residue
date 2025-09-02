@@ -469,8 +469,8 @@ Optional keyword argument:
     nil))
 
 ;; for testing only--not intended to be a user-level function.
-(defun $bp (e x pt)
-  (branch-point-p e x pt))
+;(defun $bp (e x pt)
+;  (branch-point-p e x pt))
 
 (defvar *branch-point-hashtable* (make-hash-table :test #'eq))
 
