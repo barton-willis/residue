@@ -471,14 +471,20 @@ residue(log(x)*sin(%pi*x)/(x - 1), x, 1);
 0$
 
  /* polylog tests */
-residue(li[2](x)/(x - 1), x, 1);
-%pi^2/6$
+ 
+ /* Since x -> li[2](x)/(x-1) has a branch point at 1, the residue isn't defined.*/
+nounform_return(residue(li[2](x)/(x - 1), x, 1));
+['residue, li[2](x)/(x - 1), x, 1]$
 
-residue(li[3](x)/(x - a), x, a);
+block([ans],
+  assume(notequal(a,1)),
+  ans : residue(li[3](x)/(x - a), x, a),
+  forget(notequal(a,1)),
+  ans);
 li[3](a)$
 
 residue(li[1](x)/(x - 1), x, 1);
--residue(log(1-x)/(x-1),x,1)$
+residue(-log(1-x)/(x-1),x,1)$
 
 residue(li[2](x)/(x - %i), x, %i);
 (48*%catalan*%i-%pi^2)/48$

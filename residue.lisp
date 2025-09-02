@@ -1,7 +1,7 @@
 (in-package :maxima)
 
 (declare-top (special var sn* sd*))
-(defvar *residue-method-info* nil
+(defvar *residue-method-info* t
   "If non-nil, residue methods may print informational messages when they succeed.")
 
 (defvar *residue-methods* nil)
@@ -567,7 +567,7 @@ Optional keyword argument:
 (define-branch-point-handler $li (e x pt)
    (let* ((a (first e)) (b (second e)))
             (or 
-              (eql ($limit b x pt) 1)
+              (eq '$yes ($askequal ($limit b x pt) 1))
               (branch-point-p b x pt)
               (branch-point-p a x pt))))
 
