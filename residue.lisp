@@ -63,46 +63,6 @@
              ($ratdisrep (pscoeff1 ee x n))
              nil))))
 
-;; This function isn't used and hasn't been tested.
-(defun all-residues-rational-fun (p q x)
-  "Compute all the residues of the rational function p/q at the poles of q using Heaviside's formula.
-Arguments:
-  p — numerator of the rational function (Maxima expression)
-  q — denominator of the rational function (Maxima expression)
-  x — variable with respect to which residues are computed
-Returns:
-  Two values:
-    - A list of residues at each pole of q
-    - A list of the corresponding poles
-Notes:
-  This function requires that solve can find all the roots of `q`; if it is not able to find all
-  the roots, it returns nil. This function does not find the full partial fraction decomposition, 
-  it only finds the first order pole terms."
-
-  ;; set `poles` to a list of the zeros of `q` and set `ord` to a list of their multiplicities
-  (multiple-value-bind (poles ord) (solve-with-multiplicities q x)
-    ;; set `ppoles` to a list of gensyms, one for each pole,
-    ;; set `qq` to a list of the factors of q, with the corresponding gensym substituted for the pole,
-    ;; eventually `res` will be a list of the residues.
-	(cond ((null poles) nil)
-	      (t
-    (let* ((res nil)
-		   (qe ($expand q))
-		   (lc (coeff qe x ($hipow qe x))) ;leading coefficient of q
-		   (qq (mapcar #'(lambda (a b) (ftake 'mexpt (sub x a) b)) poles ord))
-		   (qqq (mul lc (fapply 'mtimes qq))))
-          (cond ((null poles) nil) ; return nil when unable to solve
-              (t
-               ;; For each factor qk of q, say qk = (x - pk)^nk, remove qk from q, call this qs
-               ;; and evaluate diff(p/qs, nk-1) / (nk-1)! at x = pk. This is Heaviside’s formula.
-			   (mapcar #'(lambda (qk pk)
-			      (push (get-taylor-coeff
-				          (div p (maxima-substitute 1 qk qqq)) 
-						  x 
-						  pk 
-				          (if (mexptp qk) (sub (third qk) 1) 0)) res)) qq poles)
-               (values (reverse res) poles))))))))
-
 ;; For another possible method for finding residues, see 
 ;; https://math.stackexchange.com/questions/3480929/theorem-on-residue-of-composite-function
 (defmfun $residue (e x pt)
@@ -114,17 +74,15 @@ Notes:
     (merror (intl:gettext "residue: third argument must not depend on second argument; found ~M") pt))
   ;; Error when `e` is an mbag
   (when (mbagp e)
-	(merror (intl:gettext "residue: first argument must not be an mbag; found ~M") e))
+ 	  (merror (intl:gettext "residue: first argument must not be an mbag; found ~M") e))
    ;; Error when `pt` is an mbag
   (when (mbagp pt)
-	(merror (intl:gettext "residue: third argument must not be an mbag; found ~M") pt))
+	  (merror (intl:gettext "residue: third argument must not be an mbag; found ~M") pt))
 
   ;; Unfortunately, when running the testsuite, sometimes `e` is not simplified. So, let us
-  ;; call resimplify, but this doesn't fix any bugs that I know.
-  (setq e (resimplify e))
-  ;; Make sure that `e` is in standard representation
-  (setq e ($ratdisrep e))
-  (residue-by-methods e x pt))
+  ;; call resimplify, but this doesn't fix any bugs that I know. And make sure that `e` is 
+  ;; in standard representation
+  (residue-by-methods ($ratdisrep (resimplify e)) x pt))
  
 (defun residue-by-infinity-transform (e x pt)
  "Compute the residue of `e` at infinity by transforming via x = 1/z."
@@ -477,20 +435,20 @@ Optional keyword argument:
 (defun default-branch-point-p (e x pt)
   (some #'(lambda (q) (branch-point-p q x pt)) (cdr e)))
 
-;; I think this should define its own context and save the results of any ask queries.
 (defun branch-point-p (e x pt)
-  "Return true iff the function x -> e has a branch point at pt."
-  (setq e ($ratdisrep e))
+ "Return true iff the function x ↦ e has a branch point at pt. Dispatches to a handler based on the 
+ operator of e, using *branch-point-hashtable*."
   (cond
     (($mapatom e) nil)
     ((and (consp e) (consp (car e)))
-      (let ((op (mop e)) (fn))
-        (cond (($subvarp op)
-                (setq fn (gethash (subfunname e) *branch-point-hashtable* #'default-branch-point-p))
-                (funcall fn (append (subfunsubs e) (subfunargs e)) x pt))
-              (t
-               (setq fn (gethash op  *branch-point-hashtable* #'default-branch-point-p))
-               (funcall fn (cdr e) x pt)))))
+     (let* ((op (mop e))
+       (fn (if ($subvarp op)
+               (gethash (subfunname e) *branch-point-hashtable* #'default-branch-point-p)
+               (gethash op *branch-point-hashtable* #'default-branch-point-p)))
+       (args (if ($subvarp op)
+                 (append (subfunsubs e) (subfunargs e))
+                 (cdr e))))
+      (funcall fn args x pt)))
     (t nil)))
 
 (defmacro define-branch-point-handler (symbol args &body body)
@@ -577,3 +535,5 @@ Optional keyword argument:
               (and (integerp a) (eq t (mgrp 0 a)))
               (branch-point-p b x pt)
               (branch-point-p a x pt))))
+
+ 
