@@ -371,7 +371,7 @@ Optional keyword argument:
                     (hi (fifth ps))
                     (exponent (div (mul ($diff summand x) (sub x pt)) summand))
                     (nn (first (multiple-value-list (solve-with-multiplicities  (ftake 'mequal exponent -1) index)))))
-           
+               ;; If there isn't exactly one solution, set nn to nil; otherwise set nn to the unique solution.
                (setq nn (if (eql 1 (length nn))
                             (first nn)
                          nil))
