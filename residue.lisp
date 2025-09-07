@@ -363,13 +363,18 @@ Optional keyword argument:
             ((not (freeof '%at ps)) nil)
             ;; Disallow iterated sums
             ((non-iterated-sum-p ps)
+              ;; ps looks like sum(a(index)*x^exponent,index,lo,hi), match ps to exponent, index, lo, and hi.
+              ;; Also nn is the solution with respect to index to exponent = -1. 
              (let* ((summand (second ps))
                     (index (third ps))
                     (lo (fourth ps))
                     (hi (fifth ps))
-                    (n (div (mul ($diff summand x) (sub x pt)) summand))
-                    (nn  (first (multiple-value-list (solve-with-multiplicities  (ftake 'mequal n -1) index)))))
-               (setq nn (first nn))
+                    (exponent (div (mul ($diff summand x) (sub x pt)) summand))
+                    (nn (first (multiple-value-list (solve-with-multiplicities  (ftake 'mequal exponent -1) index)))))
+           
+               (setq nn (if (eql 1 (length nn))
+                            (first nn)
+                         nil))
                (if (and nn
                         (eq '$yes ($askinteger nn))
                         (eq '$yes ($ask_relational (ftake 'mleqp lo nn) t))
@@ -539,4 +544,3 @@ Optional keyword argument:
               (and (integerp a) (eq t (mgrp 0 a)))
               (branch-point-p b x pt)
               (branch-point-p a x pt))))
-
