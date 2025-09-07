@@ -327,55 +327,59 @@ Optional keyword argument:
        (second fp))
       (t fp))))
 
-;; Undone: (a) branch point detector (b) residue by matching
+(defun non-iterated-sum-p (e)
+  "Return `t` if `e` is a non-iteratived sum expression; otherwise return nil."
+  (and (consp e) (eq '%sum (caar e)) (every #'(lambda (s) (freeof '%sum s)) (cdr e))))
 
-(defun sump (e)
-  "Return `t` if `e` is a Maxima sum expression; otherwise return nil."
-  (and (consp e) (eq '%sum (caar e))))
+(defun into-sum-recursive (e)
+ "Recursively apply `intosum` to  `e` until `e` stops changing."
+  (let ((ee ($intosum e)))
+    (if (alike1 e ee)
+      e
+      (into-sum-recursive ee))))
 
-;; should I set sumexpand : true & cauchysum : true?  what about
-;; residue(exp(1/x)/(x+a),x,0)? I think we need to be more careful with
-;; solve.
-
-;; Possibly this should be boosted to handle iterated sums and products of
-;; sums, but this code doesn't.
+;; Boosting this to handle iterated sums is, I think, tricky. To do so, you'll need a way to 
+;; determine the 1/x term in sum(sum(f(i,j) * x^(a*i + b*j - n), j, 0, i), i, 0, inf),
+;; where a & b are numbers. This is, of course, doable, but I think it requires solving
+;; Diophantine equations and maybe some other work with linear inequations.
 (defun residue-by-powerseries (e x pt)
   "Compute the residue of expression `e` at point `pt` with respect to variable `x`,
-   using a power series expansion. Constructs the series in a temporary context
-   to avoid assumptions about the summation index, then safely discards it.
-   Returns the coefficient of (x - pt)^-1 if identifiable, otherwise NIL."
+   using a power series expansion. If either Maxima is unable to find the powerseries or
+   the powerseries is iterated, return nil; otherwise return the residue."
+  ;; When algebraic is true, we get a bit of a mess from powerseries(1/(x^(2/3) + 1), x, 0).
+  ;; So we'll locally set algebraic to false. Since powerseries globally declares the
+  ;; sum index to be integer, we'll do the computation in a supcontext.
+  (let ((ps nil)
+        (cntx ($supcontext))
+        ($sumexpand nil)
+        ($cauchysum nil)
+        ($algebraic nil))
 
-  ;; When algebraic is true, we get a bit of a mess from powerseries(1/(x^(2/3) + 1),x,0).
-  ;; So we'll locally set algebraic to false.
-  (let ((ps nil))
-    (let ((cntx ($supcontext)) ($sumexpand nil) ($cauchysum nil) ($algebraic nil))
-      (unwind-protect
-          (setq ps ($intosum (car (errcatch ($powerseries e x pt)))))
-        ($killcontext cntx)))
-    (cond
-      ;; when the powerseries involves an %at expression, the series is likely 
-      ;; wrong, so return nil.
-      ((not (freeof '%at ps)) nil)
-      ((and (sump ps) (freeof '%sum (second ps))) ; disallow iterated sums
-       (let* ((summand (second ps)) 
-              (index (third ps))
-              (lo (fourth ps))
-              (hi (fifth ps))
-              (n (div (mul ($diff summand x) (sub x pt)) summand))
-              (nn (first (multiple-value-list
-                 (solve-with-multiplicities (ftake 'mequal n -1) index))))
-              (cntx ($supcontext)))
-
-         (setq nn (first nn))
-         (unwind-protect
-             (if (and nn ; a solution, and 
-                      (eq '$yes ($askinteger nn))
-                      (eq '$yes ($ask_relational (ftake 'mleqp lo nn) t))
-                      (eq '$yes ($ask_relational (ftake 'mleqp nn hi) t)))
-                 (coeff (maxima-substitute nn index summand) x -1)
-               nil)
-           ($killcontext cntx))))
-      (t nil))))
+    (unwind-protect
+        (progn
+          (setq ps (into-sum-recursive (car (errcatch ($powerseries e x pt)))))
+          (cond
+            ;; When the powerseries involves an %at expression, the series is likely wrong.
+            ((not (freeof '%at ps)) nil)
+            ;; Disallow iterated sums
+            ((non-iterated-sum-p ps)
+             (let* ((summand (second ps))
+                    (index (third ps))
+                    (lo (fourth ps))
+                    (hi (fifth ps))
+                    (n (div (mul ($diff summand x) (sub x pt)) summand))
+                    (nn  (first (multiple-value-list (solve-with-multiplicities  (ftake 'mequal n -1) index)))))
+               (setq nn (first nn))
+               (if (and nn
+                        (eq '$yes ($askinteger nn))
+                        (eq '$yes ($ask_relational (ftake 'mleqp lo nn) t))
+                        (eq '$yes ($ask_relational (ftake 'mleqp nn hi) t)))
+                   (coeff (maxima-substitute nn index summand) x -1)
+                 nil)))
+            ;; If it's an iterated sum or something else, return nil
+            (t nil)))
+      ;; Clean up the supcontext
+      ($killcontext cntx))))
 
 ;; experimental code--ask a question about a mrelationp expression. When true, assume the fact
 ;; in the current context.  Possibly "ask" implies that this function does more than it does--it
@@ -536,4 +540,3 @@ Optional keyword argument:
               (branch-point-p b x pt)
               (branch-point-p a x pt))))
 
- 
