@@ -391,6 +391,8 @@ Optional keyword argument:
       ($killcontext cntx))))
 
 (defun residue-by-simple-power (e x pt)
+  " When `e` has the form `(first degree polynomial in x)^n`, where `n` is free of `x`, return the residue 
+    of `e` with respect to `x` at `pt`; otherwise, return nil."
    (cond ((and (not (freeof x e))
                (mexptp e) 
                (freeof x (third e))
@@ -404,8 +406,8 @@ Optional keyword argument:
                           (if (eq '$yes ($askequal n -1))
                                 (div 1 ($diff (second e) x))
                                 0))
-                        (t (residue-by-nounform e x pt))))
-              (t 0))))))
+                        (t nil))))))
+              (t nil)))
 
 ;; experimental code--ask a question about a mrelationp expression. When true, assume the fact
 ;; in the current context.  Possibly "ask" implies that this function does more than it does--it
