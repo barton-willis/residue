@@ -66,25 +66,40 @@
 
 ;; For another possible method for finding residues, see 
 ;; https://math.stackexchange.com/questions/3480929/theorem-on-residue-of-composite-function
+
 (defmfun $residue (e x pt)
   ;; Error when var isn't a mapatom
   (when (not ($mapatom x))
     (merror (intl:gettext "residue: second argument must be a mapatom; found ~M") x))
+
   ;; Error when `p` depends on `var`
   (when (not (freeof x pt))
     (merror (intl:gettext "residue: third argument must not depend on second argument; found ~M") pt))
+
   ;; Error when `e` is an mbag
   (when (mbagp e)
- 	  (merror (intl:gettext "residue: first argument must not be an mbag; found ~M") e))
-   ;; Error when `pt` is an mbag
+    (merror (intl:gettext "residue: first argument must not be an mbag; found ~M") e))
+
+  ;; Error when `pt` is an mbag
   (when (mbagp pt)
-	  (merror (intl:gettext "residue: third argument must not be an mbag; found ~M") pt))
+    (merror (intl:gettext "residue: third argument must not be an mbag; found ~M") pt))
 
   ;; Unfortunately, when running the testsuite, sometimes `e` is not simplified. So, let us
   ;; call resimplify, but this doesn't fix any bugs that I know. And make sure that `e` is 
-  ;; in standard representation
-  (residue-by-methods ($ratdisrep (resimplify e)) x pt))
- 
+  ;; in standard representation.
+
+  ;; We don't want Maxima to ask questions about `x`. We could substitute a gensym for
+  ;; `x`, but for a nounform return, we need to convert back to the original variable.
+  ;; Instead, let's do a clunky setf/ unset setf
+  (let ((was-internal (get x 'internal)))
+    (unwind-protect
+        (progn 
+          (when (not was-internal)
+            (setf (get x 'internal) t))
+          (residue-by-methods ($ratdisrep (resimplify e)) x pt))
+      (when (not was-internal)
+        (setf (get x 'internal) nil)))))
+
 (defun residue-by-infinity-transform (e x pt)
  "Compute the residue of `e` at infinity by transforming via x = 1/z."
 	(and (member pt *infinities*)
