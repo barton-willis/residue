@@ -2,7 +2,7 @@
 
 This project reworks the Maxima CAS code for computing residues—that is, the coefficient of the reciprocal term in a Laurent series. Currently, the code focuses on reworking only the user-level function `residue`, but it also redefines two functions used by the definite integration code to use the new residue code. In future updates, we may revise more parts of the definite integration code that depend on residue calculations.
 
-Internally, the new user-level function `residue` uses an extensible dispatch system that selects among several well-known methods, including Taylor series expansion, power series techniques, and asymptotic Taylor methods. 
+Internally, the new user-level function `residue` uses an extensible dispatch system that selects among several well-known methods, including Taylor series expansion, power series techniques, and asymptotic Taylor methods. When the code detects a branch point, it returns a residue nounform. For an example, see input %i10 in the Examples section.
 
 ## What is Included
 The repository includes:
@@ -90,6 +90,25 @@ Residue method: residue-by-taylor succeeded.
 (%o8)                              ────────
                                       2
                                    3 a  + 1
+
+(%i9) residue(sum(a(k)*x^(k-n),k,a,b),x,0);
+Is n an integer?
+
+y;
+Is a <= n - 1?
+
+y;
+Is n - 1 <= b?
+
+y;
+Residue method: residue-by-powerseries succeeded.
+(%o9)                              a(n - 1)
+
+(%i10) residue(sqrt(x)/(x-1),x,0);
+Residue method: residue-by-branch-point succeeded.
+                                    sqrt(x)
+(%o10)                      residue(───────, x, 0)
+                                     x - 1
 ~~~
 
 ## Related Work
