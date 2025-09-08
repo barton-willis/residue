@@ -623,9 +623,12 @@ residue(1/(exp(x) - 1 - x), x, 0);
 residue(1/(exp(x) - 1 - a*x), x, 0);
 -(1/(a-1))$
 
-/* could do an askequal(n,1), I suppose, but this is not wrong*/
-nounform_return(residue(1/(x-1)^n,x,1));
-['residue, 1/(x-1)^n,x,1]$
+block([ans],
+  assume(equal(n,1)),
+  ans : residue(1/(x-1)^n,x,1),
+  forget(equal(n,1)),
+  ans);
+1$
 
 nounform_return(residue(exp(x)/(x-1)^n,x,1));
 ['residue, exp(x)/(x-1)^n,x,1]$

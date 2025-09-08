@@ -6,20 +6,21 @@
 
 (defvar *residue-methods* nil)
 
-;; The methods residue-nounform and residue-by-simp are required, but the other methods are 
+;; The methods residue-by-nounform and residue-by-simp are required, but the other methods are 
 ;; optional.
 (eval-when (:load-toplevel :execute)
   (setq *residue-methods*
         (list 'residue-by-misc-undefined 
               'residue-by-freeof 
               'residue-by-infinity-transform
+              'residue-by-simple-power 
               'residue-by-branch-point
               'residue-rational
               'residue-by-taylor
               'residue-by-taylor-asym
               'residue-by-powerseries 
               'residue-by-simp
-              'residue-nounform))
+              'residue-by-nounform))
     "List of methods for computing residues. Each method should accept three arguments 
   `(e x pt)` and return either a valid residue or nil if it cannot compute the result.")            
 
@@ -262,7 +263,7 @@ Returns: The residue of the function `x -> w` at `pt`."
          ;; Otherwise, give up
          (t nil))))))
 
-(defun residue-nounform (e x pt)
+(defun residue-by-nounform (e x pt)
 "Construct a symbolic noun form of the residue expression residue(e, x, pt)."
   (list (list '%residue 'simp) e x pt))
 
@@ -286,14 +287,14 @@ Returns: The residue of the function `x -> w` at `pt`."
          (mul (cadr e)
               (residue-by-methods (fapply 'mtimes (cddr e)) x pt)))
         (t
-         (residue-nounform e x pt))))
+         (residue-by-nounform e x pt))))
 
 (defun residue-by-misc-undefined (e x pt)
 "Return a residue nounform when input is an inequation, mbag, the variable isn't a mapatom, or the 
  residue point depends on the variable; otherwise, return nil."
   ;; Possibly optionally throw an error instead of a nounform.
   (if (or (mrelationp e) (mrelationp pt) (not ($mapatom x)) (mbagp e) (mbagp pt) (not (freeof x pt)))
-     (residue-nounform e x pt)
+     (residue-by-nounform e x pt)
      nil))
 
 (defun residue-by-methods (e x pt &key (methods *residue-methods*))
@@ -326,6 +327,9 @@ Optional keyword argument:
       ((mexptp fp)
        (second fp))
       (t fp))))
+
+(defun sum-p (e)
+    (and (consp e) (eq '%sum (caar e))))
 
 (defun non-iterated-sum-p (e)
   "Return `t` if `e` is a non-iteratived sum expression; otherwise return nil."
@@ -386,6 +390,23 @@ Optional keyword argument:
       ;; Clean up the supcontext
       ($killcontext cntx))))
 
+(defun residue-by-simple-power (e x pt)
+   (cond ((and (not (freeof x e))
+               (mexptp e) 
+               (freeof x (third e))
+               ($polynomialp (second e) (ftake 'mlist x) 
+                                #'(lambda (s) (freeof x s)) 
+                                #'(lambda (s) (or (eql s 0) (eql s 1)))))
+                            
+      (let* ((n (third e)))
+        (cond ((eq '$yes ($askequal 0 (maxima-substitute pt x (second e))))
+                  (cond ((eq '$yes ($askinteger n)) 
+                          (if (eq '$yes ($askequal n -1))
+                                (div 1 ($diff (second e) x))
+                                0))
+                        (t (residue-by-nounform e x pt))))
+              (t 0))))))
+
 ;; experimental code--ask a question about a mrelationp expression. When true, assume the fact
 ;; in the current context.  Possibly "ask" implies that this function does more than it does--it
 ;; doesn't allow, for example ask(integerp(zzz)). Maybe it either needs to be extended, or the 
@@ -432,7 +453,7 @@ Optional keyword argument:
 (defun residue-by-branch-point (e x pt)
   "When pt is a branch point of x -> e, return a residue nounform; otherwise return nil."
   (if (branch-point-p e x pt)
-    (residue-nounform e x pt)
+    (residue-by-nounform e x pt)
     nil))
 
 ;; for testing only--not intended to be a user-level function.
