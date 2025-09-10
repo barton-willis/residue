@@ -427,11 +427,8 @@ Optional keyword argument:
                         (t nil))))))
               (t nil)))
 
-;; Here is an example of using the m2 pattern matcher to find a residue.
-(defun residue-by-matching (e x pt)
- "Return residue(e,x,pt) by using the `m2` pattern matcher."
-  (catch 'finished
-    (when (eql pt 0) ;match to c·sin(a/x)·cos(b·x), where a, b, and c are free of x
+(defun residue-by-match-to-cos-sin-recip (e x pt)
+  (cond ((eql pt 0) ;match to c·sin(a/x)·cos(b·x), where a, b, and c are free of x
       (let* ((match (m2 
                      e
                      `((mtimes)
@@ -441,15 +438,19 @@ Optional keyword argument:
              (c (cdras 'c match))
              (b (cdras 'b match))
              (a (cdras 'a match)))
-        (when match
-          (throw 'finished
-                 (mul c
+        (if match
+                 (mul a c 
                       (ftake '%hypergeometric
                              (ftake 'mlist)
                              (ftake 'mlist (div 3 2) 1 (div 1 2))
-                             (div (mul a a b b) 16)))))))
-    ;; fallback if match
-    (throw 'finished nil)))
+                             (div (mul a a b b) 16)))
+                 nil)))
+      (t nil)))
+
+;; Here is an example of using the m2 pattern matcher to find a residue.
+(defun residue-by-matching (e x pt)
+ "Return residue(e,x,pt) by using the `m2` pattern matcher."
+  (or (residue-by-match-to-cos-sin-recip e x pt)))
 ;; experimental code--ask a question about a mrelationp expression. When true, assume the fact
 ;; in the current context.  Possibly "ask" implies that this function does more than it does--it
 ;; doesn't allow, for example ask(integerp(zzz)). Maybe it either needs to be extended, or the 

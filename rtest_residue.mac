@@ -898,6 +898,27 @@ residue(g(x),x,a)/%pi+a*residue(f(x),x,a)+c$
 nounform_return('residue(exp(1/x),x,0));
 ['residue, exp(1/x),x,0]$
 
+residue((x + 1)/(x + 2)^3, x, -2);
+0$
+
+residue(sin(3/x)*cos(2*x), x, 0);
+0$
+
+residue(c*sin(a/x)*cos(b*x), x, 0);
+a*c*hypergeometric([],[1/2,1,3/2],(a^2*b^2)/16)$
+
+residue(exp(-1/x)/x^2, x, 0);
+0$
+
+residue(exp(-1/x)/x,x,0);
+1$
+
+residue((x^2 + 1)*sin(1/x)/x, x, 0);
+0$
+
+residue((x^2 + 1)*sin(1/x)/x, x, 0);
+0$
+
 values;
 []$
 
