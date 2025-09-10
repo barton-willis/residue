@@ -419,8 +419,8 @@ residue(1/bessel_j(0, x), x, %pi);
 nounform_return(residue(bessel_y(0, x), x, 0));
 ['residue,bessel_y(0, x), x, 0]$  /* Logarithmic singularity at x = 0 */
 
-residue(bessel_y(1, x), x, 0);
--2/%pi$
+nounform_return(residue(bessel_y(1, x), x, 0)); /* Logarithmic singularity at x = 0 */
+['residue, bessel_y(1, x), x, 0]$
 
 residue(bessel_j(0, x)/(x - 1), x, 1);
 bessel_j(0, 1)$
@@ -434,8 +434,8 @@ bessel_y(0, a)$
 residue(bessel_j(0, x)/(x - %i), x, %i);
 bessel_j(0, %i)$
 
-residue(bessel_y(1, x)/x, x, 0);
-0$
+nounform_return(residue(bessel_y(1, x)/x, x, 0));
+['residue, bessel_y(1, x)/x, x, 0]$
 
 /* Residue Tests: Log times Trig Function */
 residue(log(x)*sin(x)/(x - %pi), x, %pi);
@@ -772,8 +772,8 @@ cos(4)/25$
 residue(z*cos(1/z), z, 0);
 -1/2$
 
-nounform_return(residue(cos(z)*sin(1/z), z, 0));
-['residue, cos(z)*sin(1/z), z, 0]$
+residue(cos(z)*sin(1/z), z, 0);
+hypergeometric([],[1/2,1,3/2],1/16)$
 
 residue(z^2*sin(1/z), z, 0);
 -1/6$

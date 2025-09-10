@@ -12,6 +12,7 @@
   (setq *residue-methods*
         (list 'residue-by-misc-undefined 
               'residue-by-freeof 
+              'residue-by-matching 
               'residue-by-infinity-transform
               'residue-by-simple-power 
               'residue-by-branch-point
@@ -278,8 +279,10 @@ Returns: The residue of the function `x -> w` at `pt`."
          ;; Otherwise, give up
          (t nil))))))
 
+(defvar *bad* nil)
 (defun residue-by-nounform (e x pt)
 "Construct a symbolic noun form of the residue expression residue(e, x, pt)."
+  (push (ftake 'mlist (maxima-substitute '$x x e) '$x pt) *bad*)
   (list (list '%residue 'simp) e x pt))
 
 ;; We include this method because it doesn't ask questions that some other methods might ask--for example 
@@ -424,6 +427,29 @@ Optional keyword argument:
                         (t nil))))))
               (t nil)))
 
+;; Here is an example of using the m2 pattern matcher to find a residue.
+(defun residue-by-matching (e x pt)
+ "Return residue(e,x,pt) by using the `m2` pattern matcher."
+  (catch 'finished
+    (when (eql pt 0) ;match to c·sin(a/x)·cos(b·x), where a, b, and c are free of x
+      (let* ((match (m2 
+                     e
+                     `((mtimes)
+                       (c freevar2 ,x)
+                       ((%sin) ((mtimes) (a freevar2 ,x) ((mexpt) ,x -1)))
+                       ((%cos) ((mtimes) (b freevar2 ,x) ,x)))))
+             (c (cdras 'c match))
+             (b (cdras 'b match))
+             (a (cdras 'a match)))
+        (when match
+          (throw 'finished
+                 (mul c
+                      (ftake '%hypergeometric
+                             (ftake 'mlist)
+                             (ftake 'mlist (div 3 2) 1 (div 1 2))
+                             (div (mul a a b b) 16)))))))
+    ;; fallback if match
+    (throw 'finished nil)))
 ;; experimental code--ask a question about a mrelationp expression. When true, assume the fact
 ;; in the current context.  Possibly "ask" implies that this function does more than it does--it
 ;; doesn't allow, for example ask(integerp(zzz)). Maybe it either needs to be extended, or the 
@@ -564,6 +590,12 @@ Optional keyword argument:
               (branch-point-p b x pt))))))
             
 (define-branch-point-handler %bessel_y (e x pt)
+   (let* ((b (second e)))
+            (or 
+              (eql ($limit b x pt) 0)
+              (branch-point-p b x pt))))
+
+(define-branch-point-handler %bessel_k (e x pt)
    (let* ((b (second e)))
             (or 
               (eql ($limit b x pt) 0)
