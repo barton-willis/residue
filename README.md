@@ -109,6 +109,13 @@ Residue method: residue-by-branch-point succeeded.
                                     sqrt(x)
 (%o10)                      residue(───────, x, 0)
                                      x - 1
+
+(%i11) residue(sin(5/x)*cos(x),x,0);
+Residue method: residue-by-matching succeeded.
+                                            1     3   25
+(%o11)                5 hypergeometric([], [─, 1, ─], ──)
+                                            2     2   16
+
 ~~~
 
 ## Related Work
