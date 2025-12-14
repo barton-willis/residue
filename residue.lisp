@@ -448,22 +448,23 @@ Optional keyword argument:
 (defun residue-by-matching (e x pt)
  "Return residue(e,x,pt) by using the `m2` pattern matcher."
   (or (residue-by-match-to-cos-sin-recip e x pt)))
-;; experimental code--ask a question about a mrelationp expression. When true, assume the fact
-;; in the current context. 
-(defmfun ask-relational (e &optional (remember t))
+
+;; Ask a question about a mrelationp expression. When the optional argument `remember` and the boolean value
+;; of the `e` is true, assume the fact `e` in the current context. This function does not accept `#` as a
+;; relational operator.
+(defun ask-relational (e &optional (remember t))
   (cond
-    ((mrelationp e)
+    ((and (mrelationp e) (not (eq (caar e) 'mnotequal)))
      (let ((ans (ask-relational-helper e)))
        (when (eq t remember)
-         (assume e))
+         (if (eq ans '$yes)
+               (assume e)
+               (assume (ftake 'mnot e))))
        ans))
     (t
-     (merror (intl:gettext "ask_relational: Expected a relational expression (<, <=, =, #, >, >=), but got ~M ~%") e)
+     (merror (intl:gettext "ask-relational: Expected a relational expression (<, <=, =, >, >=), but got ~M ~%") e)
      nil)))
 
-;; Bugs & things to think about:  
-;; (a) ask(x # 3) is accepted, but assume(x # 3) is not valid. I'm not sure what I want.
-;; (c) I'm not sure that (mfuncall '$is e) is what I want?
 (defmfun ask-relational-helper (e)
   (let ((answer (mfuncall '$is e)))
     (cond
