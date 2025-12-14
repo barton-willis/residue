@@ -23,17 +23,18 @@
               'residue-by-simp
               'residue-by-nounform))
     "List of methods for computing residues. Each method should accept three arguments 
-  `(e x pt)` and return either a valid residue or nil if it cannot compute the result.")            
+  `(e x pt)` and return either a valid residue or nil if the method is unable to compute the result.")            
 
 (defun solve-with-multiplicities (q x)
   "Return a list of the solutions to the equation `q=0` for `x`. Return both a CL list
  of the solutions and a CL list of the corresponding multiplicities. When solve fails, 
- return nil. The solutions are not in the form of an equation. "
+ return nil. The solutions are not in the form of an equation--that is (1,2,3), not (x=1,x=2,x=3)."
   (let* (($breakup nil)
          ($programmode t)
          ($solvedecomposes t)
          ($solveexplicit t)
          ($algexact t)
+         ($solveradcan t)
          ($solvefactors t)
          (ans (mapcar #'$rhs (cdr ($solve ($factor q) x)))))
     ;; When solutions are missing, return (values nil nil)
@@ -73,7 +74,7 @@
   (when (not ($mapatom x))
     (merror (intl:gettext "residue: second argument must be a mapatom; found ~M") x))
 
-  ;; Error when `p` depends on `var`
+  ;; Error when `pt` depends on `x`
   (when (not (freeof x pt))
     (merror (intl:gettext "residue: third argument must not depend on second argument; found ~M") pt))
 
@@ -226,8 +227,6 @@ Returns: The residue of the function `x -> w` at `pt`."
            ;; Otherwise, give up
            (t nil)))))))
 
-;; I think this code needs a way to detect branch points. It is responsible for the bug
-;; residue(1/(sqrt(x^2 - 1)), x, 1)
 (defun residue-by-taylor-asym (e x pt &optional (n 4) (stop 2))
   "Use a Taylor polynomial to find the residue of `e` at `pt` with respect to `x`. When successful,
   return the residue, otherwise return nil. The fourth argument `n` determines the order of the Taylor
@@ -279,10 +278,8 @@ Returns: The residue of the function `x -> w` at `pt`."
          ;; Otherwise, give up
          (t nil))))))
 
-(defvar *bad* nil)
 (defun residue-by-nounform (e x pt)
 "Construct a symbolic noun form of the residue expression residue(e, x, pt)."
-  (push (ftake 'mlist (maxima-substitute '$x x e) '$x pt) *bad*)
   (list (list '%residue 'simp) e x pt))
 
 ;; We include this method because it doesn't ask questions that some other methods might ask--for example 
@@ -295,7 +292,7 @@ Returns: The residue of the function `x -> w` at `pt`."
       nil))
 
 ;;  When f is holomorphic at a and g has a pole of order zero or one at a, we have Res(fg,a) = f(a)Res(g,a). 
-;; I could attempt to impliment this rule. 
+;; I could attempt to implement this rule. 
 (defun residue-by-simp (e x pt)
  "Uses linearaity to to simplify a residue expression."
   (cond ((mplusp e)
@@ -399,8 +396,8 @@ Optional keyword argument:
                          nil))
                (if (and nn
                         (eq '$yes ($askinteger nn))
-                        (eq '$yes ($ask_relational (ftake 'mleqp lo nn) t))
-                        (eq '$yes ($ask_relational (ftake 'mleqp nn hi) t)))
+                        (eq '$yes (ask-relational (ftake 'mleqp lo nn) t))
+                        (eq '$yes (ask-relational (ftake 'mleqp nn hi) t)))
                    (coeff (maxima-substitute nn index summand) x -1)
                  nil)))
             ;; If it's an iterated sum or something else, return nil
@@ -452,10 +449,8 @@ Optional keyword argument:
  "Return residue(e,x,pt) by using the `m2` pattern matcher."
   (or (residue-by-match-to-cos-sin-recip e x pt)))
 ;; experimental code--ask a question about a mrelationp expression. When true, assume the fact
-;; in the current context.  Possibly "ask" implies that this function does more than it does--it
-;; doesn't allow, for example ask(integerp(zzz)). Maybe it either needs to be extended, or the 
-;; name needs to be changed. 
-(defmfun $ask_relational (e &optional (remember t))
+;; in the current context. 
+(defmfun ask-relational (e &optional (remember t))
   (cond
     ((mrelationp e)
      (let ((ans (ask-relational-helper e)))
@@ -463,7 +458,7 @@ Optional keyword argument:
          (assume e))
        ans))
     (t
-     (merror (intl:gettext "ask: Expected a relational expresion (<, <=, =, #, >, >=), but got ~M ~%") e)
+     (merror (intl:gettext "ask_relational: Expected a relational expresion (<, <=, =, #, >, >=), but got ~M ~%") e)
      nil)))
 
 ;; Bugs & things to think about:  
