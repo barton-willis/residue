@@ -480,6 +480,17 @@ Optional keyword argument:
           (mtell (intl:gettext "Acceptable answers are yes, y, no, n (case independent). ~%"))
           (ask-relational-helper e)))))))
 
+;; slightly revised from `residue.lisp`. I have removed the call to expand and to 
+;; rectform. Plus, I unified res1 and res1-var. This change causes a semantic
+;; testsuite failure (rtest15.mac: Problem 211 (line 699)). I say the new answer
+;; is more simple than the old.
+(defun res1 (zn zd pl1)
+  (res-var var zn zd p11))
+
+(defun res1-var (var1 zn zd pl1)
+  (let ((q (div zn zd)))
+	(mapcar #'(lambda (s) (maxima-substitute s var1 q)) pl1)))
+
 ;; Redefine resm1 & resm1-var to call residue-by-methods. The functions resm0, resm0-var, residue,
 ;; and residue-var are, I think, OK as is.
 (defun resm1 (e pt)
