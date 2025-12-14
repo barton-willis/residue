@@ -282,8 +282,8 @@ Returns: The residue of the function `x -> w` at `pt`."
 "Construct a symbolic noun form of the residue expression residue(e, x, pt)."
   (list (list '%residue 'simp) e x pt))
 
-;; We include this method because it doesn't ask questions that some other methods might ask--for example 
-;; for residue(a/b,x,b) some other methods might ask if b is zero.
+;; We include this method because it doesn't ask questions that some other methods might ask--for example, 
+;; residue(a/b,x,b) some other methods might ask if b is zero.
 (defun residue-by-freeof (e x pt)
   "Return 0 if `x` is free of `e`; otherwise, return nil."
   (declare (ignore pt))
@@ -294,7 +294,7 @@ Returns: The residue of the function `x -> w` at `pt`."
 ;;  When f is holomorphic at a and g has a pole of order zero or one at a, we have Res(fg,a) = f(a)Res(g,a). 
 ;; I could attempt to implement this rule. 
 (defun residue-by-simp (e x pt)
- "Uses linearaity to to simplify a residue expression."
+ "Uses linearity to to simplify a residue expression."
   (cond ((mplusp e)
          (fapply 'mplus
                  (mapcar #'(lambda (s) (residue-by-methods s x pt)) (cdr e))))
@@ -347,7 +347,7 @@ Optional keyword argument:
     (and (consp e) (eq '%sum (caar e))))
 
 (defun non-iterated-sum-p (e)
-  "Return `t` if `e` is a non-iteratived sum expression; otherwise return nil."
+  "Return `t` if `e` is a non-iterated sum expression; otherwise return nil."
   (and (consp e) (eq '%sum (caar e)) (every #'(lambda (s) (freeof '%sum s)) (cdr e))))
 
 (defun into-sum-recursive (e)
@@ -458,7 +458,7 @@ Optional keyword argument:
          (assume e))
        ans))
     (t
-     (merror (intl:gettext "ask_relational: Expected a relational expresion (<, <=, =, #, >, >=), but got ~M ~%") e)
+     (merror (intl:gettext "ask_relational: Expected a relational expression (<, <=, =, #, >, >=), but got ~M ~%") e)
      nil)))
 
 ;; Bugs & things to think about:  
