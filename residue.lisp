@@ -480,15 +480,12 @@ Optional keyword argument:
           (mtell (intl:gettext "Acceptable answers are yes, y, no, n (case independent). ~%"))
           (ask-relational-helper e)))))))
 
-;; Redefine resm1 & resm1-var to call residue-by-methods. The functions resm0, resm0-var, residue,
-;; and residue-var are, I think, OK as is.
-(defun resm1 (e pt)
-  "Return residue(e,var,pt), where var is special."
-   (residue-by-methods e var pt))
+(defun resm0 (e n pole m)
+ (resm0-var var e n pole m))
 
-(defun resm1-var (x e pt)
-  "Return residue(e,x,pt)."
-	(residue-by-methods e x pt))
+(defun resm0-var (var1 e n pole m)
+  "Return subst(pole,var1, (diff(n/e,var1,m-1)/(m-1)!)"
+  (maxima-substitute pole var1 (div ($diff (div n e) var1 (- m 1)) (ftake 'mfactorial (- m 1)))))
 
 (defun residue-by-branch-point (e x pt)
   "When pt is a branch point of x -> e, return a residue nounform; otherwise return nil."
