@@ -403,6 +403,7 @@ sin(%i)$
 residue(cos(x)/(x + %i), x, -%i);           
 cos(-%i)$
 
+/* see \#4585 Taylor polynomials involving tangent & a quotient */
 residue(tan(x)/(x - %pi + %i), x, %pi - %i);
 -%i*tanh(1)$
 

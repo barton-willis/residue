@@ -174,7 +174,9 @@ Returns: The residue of the function `x -> w` at `pt`."
   return the residue, otherwise return nil. The fourth argument `n` determines the order of the Taylor
   polynomial. When the order is too small, double `n` and try again. The last argument `stop` counts down
   and ends this recursion when `stop` reaches zero."
-
+  (setq e (resimplify e))
+  (setq x (resimplify x))
+  (setq pt (resimplify pt))
   ;; When the denominator of `e` is a polynomial, ask the user if each factor vanishes at `pt`.  When there is
   ;; a vanishing factor, set taylor_simplifier to ratsubst zero for this factor.
   (let ((Q ($denom e)) (vanish nil) (cnd))
@@ -485,12 +487,18 @@ Optional keyword argument:
 ;; testsuite failure (rtest15.mac: Problem 211 (line 699)). I say the new answer
 ;; is more simple than the old.
 (defun res1 (zn zd pl1)
-  (res-var var zn zd p11))
+  (res1-var var zn zd pl1))
 
 (defun res1-var (var1 zn zd pl1)
   (let ((q (div zn zd)))
 	(mapcar #'(lambda (s) (maxima-substitute s var1 q)) pl1)))
 
+(defun resm1 (e pole)
+   (resm1-var var e pole))
+
+(defun resm1-var (var1 e pole)
+  (residue-by-taylor e var1 pole))
+  
 ;; Redefine resm1 & resm1-var to call residue-by-methods. The functions resm0, resm0-var, residue,
 ;; and residue-var are, I think, OK as is.
 (defun resm1 (e pt)
@@ -500,8 +508,6 @@ Optional keyword argument:
 (defun resm1-var (x e pt)
   "Return residue(e,x,pt)."
 	(residue-by-methods e x pt))
-
-(defvar *resm0* nil)
 
 (defun resm0 (e n pole m)
  (resm0-var var e n pole m))
