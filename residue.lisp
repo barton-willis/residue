@@ -661,7 +661,7 @@ Optional keyword argument:
 (defun $keyhole (q x &optional (fn #'(lambda (s) (ftake '%plog (neg s))))
                                (gn #'(lambda (s) (neg s))))
   (let ((*failures nil) (*roots nil) ($domain '$complex))
-    (flet ((simp-result (s) (sratsimp ($sqrtdenest s))))
+    (flet ((simp-result (s) ($rectform (sratsimp ($sqrtdenest s)))))
     (solve ($ratdenom q) x 1)
     (let ((poles *roots) (off-real nil) (on-real nil) (pk) (nk) (w) (res))
         (cond
