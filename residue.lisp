@@ -1,6 +1,6 @@
 (in-package :maxima)
 
-(declare-top (special var sn* sd*))
+(declare-top (special ivar var1 var sn* sd* *roots *failures))
 (defvar *residue-method-info* t
   "If non-nil, residue methods may print informational messages when they succeed.")
 
@@ -212,7 +212,13 @@ Returns: The residue of the function `x -> w` at `pt`."
 
         (t
          (setq e (logarc-atan2 e))
+        
+;(setq e (subst '%log '%plog e))
+       ;  (setq e ($gfactor ($expand e 0 0)))
+       ;   (mtell "e = ~M ~%" e)
          (setq ee (catch 'taylor-catch ($taylor e x pt n)))
+        ; (setq ee (subst '%plog '%log ee))
+        ;;; (mtell "ee = ~M ~%" ee)
          (cond
            ;; It is important to check that `taylor` returns a sum of integer powers; here is a case that it
            ;; does not: taylor(log(x),x,0,3) -> log(x)+.... 
@@ -637,3 +643,63 @@ Optional keyword argument:
               (and (integerp a) (eq t (mgrp 0 a)))
               (branch-point-p b x pt)
               (branch-point-p a x pt))))
+
+;;;;;;;;;;;;;;;;
+(defun off-nonnegative-real-axis-p (e)
+  (let* ((z (risplit e)) (re (car z)) (im (cdr z)))
+	(or (eq t (mnqp im 0)) (eq t (mgrp 0 re)))))
+
+(defun on-positive-real-axis-p (e)
+  (let* ((z (risplit e)) (re (car z)) (im (cdr z)))
+	(and (eql im 0) (eq t (mgqp re 0)))))
+
+;; integrate(q,x,0,inf), where x -> q is a rational function.
+;; See also https://www.youtube.com/watch?v=4XrC1eThFnw
+;; https://math.stackexchange.com/questions/4132447/why-do-keyhole-contours-work
+
+;; This is an *initial effort* for a generalization of the CL function `keyhole`. 
+(defun $keyhole (q x &optional (fn #'(lambda (s) (ftake '%plog (neg s))))
+                               (gn #'(lambda (s) (neg s))))
+  (let ((*failures nil) (*roots nil) ($domain '$complex))
+    (flet ((simp-result (s) (sratsimp ($sqrtdenest s))))
+    (solve ($ratdenom q) x 1)
+    (let ((poles *roots) (off-real nil) (on-real nil) (pk) (nk) (w) (res))
+        (cond
+          ((or (null poles) (eq poles 'failure))  nil)
+          (t 
+            (while poles
+               (setq pk ($rhs (pop poles)))
+               (setq nk (pop poles))
+               (setq w (extra-simp ($rectform ($ratdisrep ($taylor (mfuncall fn x) x pk nk)))))
+               (setq res (get-taylor-coeff (mul w q) x pk -1 (maxima-substitute pk x ($ratdenom q))))
+               (if (or (off-nonnegative-real-axis-p pk))
+                      (push res off-real)
+                      (push res on-real)))
+            (if (null on-real)        
+                (simp-result (mfuncall gn (fapply 'mplus off-real)))
+                (diverg)))))))) ;should allow PV integrals?
+
+;; An *experimental* stripped down simplifier for plog. 
+(def-simplifier plog (x)
+  (cond ((zerop1 x) (intl:gettext "plog: plog(0) is undefined."))
+        (($polynomialp ($expand x 1 0) 
+                       (ftake 'mlist '$%i)
+                        #'(lambda (q) (and (freeof '$%i q) ($constantp q)))
+                        #'(lambda (q) (and (integerp q) (or (eql 0 q) (eql 1 q)))))
+
+            (let* ((z ($expand x 1 0)) (im ($coeff z '$%i 1)) (re ($coeff z '$%i 0))
+                   (θ (ftake '%atan2 im re)))
+
+            (cond ((multiplep θ '$%pi) 
+                        (eq t (mgrp θ (neg '$%pi)))
+                        (or (eq t (mgrp '$%pi θ)) (eq t (eq '$%pi θ)))
+                     (add 
+                        (ftake '%log ($cabs (add re (mul '$%i im))))
+                        (mul '$%i θ)))
+                   ((zerop1 im)
+	 	                   (let ((sgn ($csign re)))
+                         (cond ((eq sgn '$pos) (ftake '%log re))
+		                           ((eq sgn '$neg) (add (ftake '%log (neg re)) (mul '$%i '$%pi)))
+                               (t (give-up)))))
+                   (t (give-up)))))
+          (t (give-up))))
