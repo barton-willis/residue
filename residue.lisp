@@ -644,7 +644,6 @@ Optional keyword argument:
               (branch-point-p b x pt)
               (branch-point-p a x pt))))
 
-;;;;;;;;;;;;;;;;
 (defun off-nonnegative-real-axis-p (e)
   (let* ((z (risplit e)) (re (car z)) (im (cdr z)))
 	(or (eq t (mnqp im 0)) (eq t (mgrp 0 re)))))
@@ -653,38 +652,56 @@ Optional keyword argument:
   (let* ((z (risplit e)) (re (car z)) (im (cdr z)))
 	(and (eql im 0) (eq t (mgqp re 0)))))
 
+(defun $mytrigsimp (e)
+  (sratsimp ($demoivre ($expand ($exponentialize e)))))
+
 ;; integrate(q,x,0,inf), where x -> q is a rational function.
 ;; See also https://www.youtube.com/watch?v=4XrC1eThFnw
 ;; https://math.stackexchange.com/questions/4132447/why-do-keyhole-contours-work
 
-;; This is an *initial effort* for a generalization of the CL function `keyhole`. 
-(defun $keyhole (q x &optional (fn #'(lambda (s) (ftake '%plog (neg s))))
-                               (gn #'(lambda (s) (neg s))))
-  (let ((*failures nil) (*roots nil) ($domain '$complex))
-    (flet ((simp-result (s) ($rectform (sratsimp ($sqrtdenest s)))))
-    (solve ($ratdenom q) x 1)
-    (let ((poles *roots) (off-real nil) (on-real nil) (pk) (nk) (w) (res))
+;; This is an *initial effort* for a generalization of the CL function `keyhole`.
+;; We skip an check that the integral is convergent. 
+(defun $keyhole-xxxx (p q x &optional (fn #'(lambda (s) (ftake '%plog (neg s))))
+                                 (gn #'(lambda (s) (neg s))))
+
+  (let ((*failures nil) (*roots nil) ($domain '$complex) ($radexpand nil) ($m1pbranch t))
+    (flet ((simp-result (s) ($rectform ($sqrtdenest s))))
+
+    (setq p (mul p (mfuncall fn x)))
+    (solve q x 1)
+    (let ((poles *roots) (off-real nil) (on-real nil) (res) (zeros nil) (multplicities nil) (qq) (lc))
+        (setq q ($expand q))
+        (setq lc ($coeff q x ($hipow q x)))
+        (setq poles (mapcar #'sratsimp poles))
         (cond
           ((or (null poles) (eq poles 'failure))  nil)
           (t 
             (while poles
-               (setq pk ($rhs (pop poles)))
-               (setq nk (pop poles))
-               (setq w (extra-simp ($rectform ($ratdisrep ($taylor (mfuncall fn x) x pk nk)))))
-               (setq res (get-taylor-coeff (mul w q) x pk -1 (maxima-substitute pk x ($ratdenom q))))
-               (if (or (off-nonnegative-real-axis-p pk))
+               (push ($rectform ($rhs (pop poles))) zeros)
+               (push (pop poles) multplicities))
+               
+            (setq qq (mul lc (fapply 'mtimes (mapcar #'(lambda (p n) (power (sub x p) n)) zeros multplicities))))
+            (dolist (pk zeros)
+               (setq res ($residue (div p qq) x pk))         
+               (if (off-nonnegative-real-axis-p pk)
                       (push res off-real)
                       (push res on-real)))
+        
             (if (null on-real)        
-                (simp-result (mfuncall gn (fapply 'mplus off-real)))
+                ($rectform (mfuncall gn (fapply 'mplus off-real)))
                 (diverg)))))))) ;should allow PV integrals?
 
+
+(defun pure-number-p (e)
+	(cond (($mapatom e) (or (member e '($%i $%pi $%e $%phi)) (mnump e)))
+	      (t (every #'pure-number-p (cdr e)))))
+
 ;; An *experimental* stripped down simplifier for plog. 
-(def-simplifier plog (x)
+(def-simplifier plog-999 (x)
   (cond ((zerop1 x) (intl:gettext "plog: plog(0) is undefined."))
         (($polynomialp ($expand x 1 0) 
                        (ftake 'mlist '$%i)
-                        #'(lambda (q) (and (freeof '$%i q) ($constantp q)))
+                        #'(lambda (q) (and (freeof '$%i q) (pure-number-p q)))
                         #'(lambda (q) (and (integerp q) (or (eql 0 q) (eql 1 q)))))
 
             (let* ((z ($expand x 1 0)) (im ($coeff z '$%i 1)) (re ($coeff z '$%i 0))
@@ -702,4 +719,9 @@ Optional keyword argument:
 		                           ((eq sgn '$neg) (add (ftake '%log (neg re)) (mul '$%i '$%pi)))
                                (t (give-up)))))
                    (t (give-up)))))
+          ((and (mexptp x) (eq (cadr x) '$%e) (multiplep (caddr x) '$%i))
+             ;; maybe I should disallow this when the result involves ceiling?
+             (mul '$%i (reduce-angle-mod-2pi (div (caddr x) '$%i))))
+
           (t (give-up))))
+

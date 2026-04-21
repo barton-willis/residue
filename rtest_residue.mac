@@ -920,6 +920,180 @@ residue((x^2 + 1)*sin(1/x)/x, x, 0);
 residue((x^2 + 1)*sin(1/x)/x, x, 0);
 0$
 
+/* -----------------------------------------------------------
+   Maxima residue testsuite
+   Generated from SymPy's test_residues.py (mathematical cases)
+   Format:  input ; expected_output $
+   ----------------------------------------------------------- */
+
+69;
+69$
+
+/* test_basic1 */
+
+residue(1/x, x, 0);
+1$
+
+residue(-2/x, x, 0);
+-2$
+
+residue(81/x, x, 0);
+81$
+
+residue(1/x^2, x, 0);
+0$
+
+residue(0, x, 0);
+0$
+
+residue(5, x, 0);
+0$
+
+residue(x, x, 0);
+0$
+
+residue(x^2, x, 0);
+0$
+
+
+/* test_basic2 */
+
+residue(1/x, x, 1);
+0$
+
+residue(-2/x, x, 1);
+0$
+
+residue(81/x, x, -1);
+0$
+
+residue(1/x^2, x, 1);
+0$
+
+residue(0, x, 1);
+0$
+
+residue(5, x, 1);
+0$
+
+residue(x, x, 1);
+0$
+
+residue(x^2, x, 5);
+0$
+
+
+/* test_f */
+
+residue(f(x)/x^5, x, 0);
+diff(f(x), x, 4), x=0 / 24$
+
+
+/* test_functions */
+
+residue(1/sin(x), x, 0);
+1$
+
+residue(2/sin(x), x, 0);
+2$
+
+residue(1/sin(x)^2, x, 0);
+0$
+
+residue(1/sin(x)^5, x, 0);
+3/8$
+
+
+/* test_expressions */
+
+residue(1/(x + 1), x, 0);
+0$
+
+residue(1/(x + 1), x, -1);
+1$
+
+residue(1/(x^2 + 1), x, -1);
+0$
+
+residue(1/(x^2 + 1), x, %i);
+-%i/2$
+
+residue(1/(x^2 + 1), x, -%i);
+%i/2$
+
+residue(1/(x^4 + 1), x, 0);
+0$
+
+residue(1/(x^4 + 1), x, exp(%i*%pi/4));
+residue(1/(x^4 + 1), x, exp(%i*%pi/4))$
+
+residue(1/(x^2 + a^2)^2, x, a*%i);
+-%i/(4*a^3)$
+
+
+/* test_expressions_failing (XFAIL in SymPy) */
+
+residue(exp(z)/(z - %pi*%i/4*a)^n, z, %i*%pi*a);
+residue(exp(z)/(z - %pi*%i/4*a)^n, z, %i*%pi*a)$
+
+
+/* test_NotImplemented */
+
+residue(exp(1/z), z, 0);
+residue(exp(1/z), z, 0)$
+
+
+/* test_bug */
+
+residue(2^z*(s + z)*(1 - s - z)/z^2, z, 0);
+1 + s*log(2) - s^2*log(2) - 2*s$
+
+
+/* test_issue_5654 */
+
+residue(1/(x^2 + a^2)^2, x, a*%i);
+-%i/(4*a^3)$
+
+residue(1/s * 1/(z - exp(s)), s, 0);
+1/(z - 1)$
+
+residue((1 + k)/s * 1/(z - exp(s)), s, 0);
+k/(z - 1) + 1/(z - 1)$
+
+
+/* test_issue_6499 */
+
+residue(1/(exp(z) - 1), z, 0);
+1$
+
+
+/* test_issue_14037 */
+
+residue(sin(x^50)/x^51, x, 0);
+1$
+
+
+/* test_issue_21176 */
+
+residue(x^2*cot(%pi*x)/(x^4 + 1), x,
+        -sqrt(2)/2 - sqrt(2)*%i/2);
+residue(x^2*cot(%pi*x)/(x^4 + 1), x,
+        -sqrt(2)/2 - sqrt(2)*%i/2)$
+
+
+/* test_issue_21177 */
+
+r : -sqrt(3)*tanh(sqrt(3)*%pi/2)/3;
+
+a : residue(cot(%pi*x)/((x - 1)*(x - 2) + 1),
+            x, 3/2 - sqrt(3)*%i/2);
+r$
+
+b : residue(cot(%pi*x)/(x^2 - 3*x + 3),
+            x, 3/2 - sqrt(3)*%i/2);
+a$
+
+/* end of sympy tests */
 values;
 []$
 
