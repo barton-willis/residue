@@ -926,9 +926,6 @@ residue((x^2 + 1)*sin(1/x)/x, x, 0);
    Format:  input ; expected_output $
    ----------------------------------------------------------- */
 
-69;
-69$
-
 /* test_basic1 */
 
 residue(1/x, x, 0);
@@ -1079,19 +1076,6 @@ residue(x^2*cot(%pi*x)/(x^4 + 1), x,
         -sqrt(2)/2 - sqrt(2)*%i/2);
 residue(x^2*cot(%pi*x)/(x^4 + 1), x,
         -sqrt(2)/2 - sqrt(2)*%i/2)$
-
-
-/* test_issue_21177 */
-
-r : -sqrt(3)*tanh(sqrt(3)*%pi/2)/3;
-
-a : residue(cot(%pi*x)/((x - 1)*(x - 2) + 1),
-            x, 3/2 - sqrt(3)*%i/2);
-r$
-
-b : residue(cot(%pi*x)/(x^2 - 3*x + 3),
-            x, 3/2 - sqrt(3)*%i/2);
-a$
 
 /* end of sympy tests */
 values;

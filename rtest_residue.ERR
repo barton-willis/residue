@@ -1,0 +1,103 @@
+
+/* Maxima error log from tests in C:/Users/barto/OneDrive/Documents/GitHub/residue/residue/rtest_residue.mac */
+
+/* Problem 198 (line 644) */
+block([ans],assume(sin(phi) > 0),
+      ans:defint(1/(w^4-2*cos(2*phi)*w^2+1),w,minf,inf),forget(sin(phi) > 0),
+      ans);
+/* Erroneous Result?:
+0 */ 
+/* Expected result: */
+%pi/(2*sin(phi));
+
+/* Problem 203 (line 664) */
+integrate(1/(x^2+%i+a),x,minf,inf);
+/* Erroneous Result?:
+0 */ 
+/* Expected result: */
+%pi/sqrt(a+%i);
+
+/* Problem 217 (line 752) */
+residue(bessel_j(k,x)/x^4,x,0);
+/* Erroneous Result?:
+'residue(bessel_j(k,x)/x^4,x,0) */ 
+/* Expected result: */
+-((bessel_j(k+3,0)-3*bessel_j(k+1,0)+3*bessel_j(k-1,0)-bessel_j(k-3,0))/48);
+
+/* Problem 248 (line 905) */
+residue(sin(3/x)*cos(2*x),x,0);
+/* Erroneous Result?:
+3*hypergeometric([],[1/2,1,3/2],9/4) */ 
+/* Expected result: */
+0;
+
+/* Problem 250 (line 911) */
+residue(exp(-1/x)/x^2,x,0);
+/* Erroneous Result?:
+'residue(%e^-(1/x)/x^2,x,0) */ 
+/* Expected result: */
+0;
+
+/* Problem 252 (line 917) */
+residue(((x^2+1)*sin(1/x))/x,x,0);
+/* Erroneous Result?:
+'residue((sin(1/x)*(x^2+1))/x,x,0) */ 
+/* Expected result: */
+0;
+
+/* Problem 253 (line 920) */
+residue(((x^2+1)*sin(1/x))/x,x,0);
+/* Erroneous Result?:
+'residue((sin(1/x)*(x^2+1))/x,x,0) */ 
+/* Expected result: */
+0;
+
+/* Problem 270 (line 985) */
+residue(f(x)/x^5,x,0);
+/* Erroneous Result?:
+'residue(f(x)/x^5,x,0) */ 
+/* Expected result: */
+ev(diff(f(x),x,4),x = 0/24);
+
+/* Problem 281 (line 1024) */
+residue(1/(x^4+1),x,exp((%i*%pi)/4));
+/* Erroneous Result?:
+-((%i+1)/2^(5/2)) */ 
+/* Expected result: */
+residue(1/(x^4+1),x,exp((%i*%pi)/4));
+
+/* Problem 283 (line 1033) */
+residue(exp(z)/(z-((%pi*%i)/4)*a)^n,z,%i*%pi*a);
+/* Erroneous Result?:
+0 */ 
+/* Expected result: */
+residue(exp(z)/(z-((%pi*%i)/4)*a)^n,z,%i*%pi*a);
+
+/* Problem 284 (line 1039) */
+residue(exp(1/z),z,0);
+/* Erroneous Result?:
+1 */ 
+/* Expected result: */
+residue(exp(1/z),z,0);
+
+/* Problem 285 (line 1045) */
+residue((2^z*(s+z)*(1-s-z))/z^2,z,0);
+/* Erroneous Result?:
+-(log(2)*s^2)+(log(2)-2)*s+1 */ 
+/* Expected result: */
+1+s*log(2)+(-s^2)*log(2)+(-2)*s;
+
+/* Problem 288 (line 1057) */
+residue((((1+k)/s)*1)/(z-exp(s)),s,0);
+/* Erroneous Result?:
+(k+1)/(z-1) */ 
+/* Expected result: */
+k/(z-1)+1/(z-1);
+
+/* Problem 291 (line 1076) */
+residue((x^2*cot(%pi*x))/(x^4+1),x,-sqrt(2)/2-(sqrt(2)*%i)/2);
+/* Erroneous Result?:
+-((%i-1)/(2^(5/2)*tan(((sqrt(2)*%i+sqrt(2))*%pi)/2))) */ 
+/* Expected result: */
+residue((x^2*cot(%pi*x))/(x^4+1),x,-sqrt(2)/2-(sqrt(2)*%i)/2);
+
